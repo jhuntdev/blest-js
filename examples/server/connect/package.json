@@ -1,0 +1,16 @@
+{
+  "name": "blest-connect-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "JHunt <blest@jhunt.dev>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "connect": "^3.7.0",
+    "cors": "^2.8.5"
+  }
+}

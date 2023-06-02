@@ -1,0 +1,15 @@
+{
+  "name": "blest-fastify-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "JHunt <blest@jhunt.dev>",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/cors": "^8.3.0",
+    "fastify": "^4.17.0"
+  }
+}
