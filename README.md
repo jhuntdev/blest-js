@@ -1,8 +1,8 @@
 # BLEST.js
 
-The JavaScript reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes server-side support for NodeJS (see examples for different frameworks below) and client-side support for React and Vue (more to come!).
+The JavaScript reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes server-side support for NodeJS and client-side support for React, plus a folder full of examples.
 
-To more fully understand the goals of BLEST, please refer to the white paper [https://jhunt.dev/BLEST%20White%20Paper.pdf].
+To learn more about BLEST, please refer to the white paper: https://jhunt.dev/BLEST%20White%20Paper.pdf
 
 ## Features
 
@@ -19,11 +19,11 @@ Install BLEST from npm
 
 With npm:
 ```bash
-npm install --save blest
+npm install --save blest-js
 ```
 or using yarn:
 ```bash
-yarn add blest
+yarn add blest-js
 ```
 
 ## Usage
