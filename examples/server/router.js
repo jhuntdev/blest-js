@@ -1,5 +1,5 @@
-const blest = require('../../index');
-const router = blest.createRequestHandler({
+const { createRequestHandler } = require('blest-js');
+const router = createRequestHandler({
   hello: () => {
     return {
       hello: 'world',

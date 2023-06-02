@@ -34,7 +34,7 @@ Use the `createRequestHandler` function to create a request handler suitable for
 
 ```javascript
 const express = require('express');
-const { createRequestHandler } = require('blest');
+const { createRequestHandler } = require('blest-js');
 
 const app = express();
 const port = 3000;
@@ -77,7 +77,7 @@ Client-side libraries assist in batching and processing requests and commands. C
 
 ```javascript
 import React from 'react';
-import { useBlestRequest, useBlestCommand } from 'blest/react';
+import { useBlestRequest, useBlestCommand } from 'blest-js/react';
 
 // Use the useBlestRequest hook for fetching data
 const MyComponent = () => {
