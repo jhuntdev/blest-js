@@ -15,7 +15,7 @@ To learn more about BLEST, please refer to the white paper: https://jhunt.dev/BL
 
 ## Installation
 
-Install BLEST from npm
+Install BLEST.js from npm
 
 With npm:
 ```bash
