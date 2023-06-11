@@ -37,7 +37,7 @@
   -------------------------------------------------------------------------------------------------
 */
 
-const createRequestHandler = (routes, options) => {
+export const createRequestHandler = (routes, options) => {
 
   if (options) {
     console.warn('The "options" argument is not yet used, but may be used in the future.')
@@ -46,9 +46,6 @@ const createRequestHandler = (routes, options) => {
   const handler = async (requests, context) => {
 
     if (!requests || typeof requests !== 'object' || !Array.isArray(requests)) return handleError(400, 'Request body should be a JSON array')
-
-    
-    if (!Array.isArray(requests)) return handleError(400, 'Request body should be a JSON array')
 
     const dedupe = []
     const promises = []
@@ -82,10 +79,6 @@ const createRequestHandler = (routes, options) => {
 
 }
 
-module.exports = {
-  createRequestHandler
-}
-
 const handleResult = (result) => {
   return [result]
 }
@@ -116,27 +109,6 @@ const routeReducer = async (handler, [id, endpoint, params, selector], context) 
   } catch (error) {
     return [id, endpoint, null, { message: error.message }]
   }
-}
-
-const deepCopy = (obj) => {
-  if (typeof obj !== 'object' || obj === null) {
-    return obj
-  }
-  let copy
-  if (Array.isArray(obj)) {
-    copy = []
-    for (let i = 0; i < obj.length; i++) {
-      copy[i] = deepCopy(obj[i])
-    }
-  } else {
-    copy = {}
-    for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        copy[key] = deepCopy(obj[key])
-      }
-    }
-  }
-  return copy
 }
 
 function filterObject(obj, arr) {

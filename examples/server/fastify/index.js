@@ -4,7 +4,7 @@ const port = 8080;
 
 fastify.register(cors);
 
-const router = require('../router');
+const router = require('./router');
 fastify.post('/', async (request, reply) => {
   const [result, error] = await router(request.body);
   if (error) {

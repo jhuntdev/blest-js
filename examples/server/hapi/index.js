@@ -9,7 +9,7 @@ const init = async () => {
     }
   });
 
-  const router = require('../router');
+  const router = require('./router');
   server.route({
     method: 'POST',
     path: '/',

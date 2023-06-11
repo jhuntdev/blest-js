@@ -1,6 +1,6 @@
 # BLEST.js
 
-The JavaScript reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes server-side support for NodeJS and client-side support for React, plus a folder full of examples.
+The JavaScript reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
 
 To learn more about BLEST, please refer to the white paper: https://jhunt.dev/BLEST%20White%20Paper.pdf
 
@@ -28,9 +28,9 @@ yarn add blest-js
 
 ## Usage
 
-### Server-side Request Handler
+### Server-side
 
-Use the `createRequestHandler` function to create a request handler suitable for use in a Node.js application. The following example uses Express, but examples are available for Express, Connect, Koa, Hapi, Fastify, and SocketIO.
+Use the `create_request_handler` function to create a request handler suitable for use in a NodeJS application. The following example uses Express, but you can find examples with other frameworks [here](/examples).
 
 ```javascript
 const express = require('express');
@@ -69,7 +69,7 @@ app.listen(port, () => {
 });
 ```
 
-### Client-side Libraries
+### Client-side
 
 Client-side libraries assist in batching and processing requests and commands. Currently available for React with other frameworks coming soon.
 
@@ -77,7 +77,7 @@ Client-side libraries assist in batching and processing requests and commands. C
 
 ```javascript
 import React from 'react';
-import { useBlestRequest, useBlestCommand } from 'blest-js/react';
+import { useBlestRequest, useBlestCommand } from 'blest-react';
 
 // Use the useBlestRequest hook for fetching data
 const MyComponent = () => {

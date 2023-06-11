@@ -6,7 +6,7 @@ const port = 8080;
 app.use(cors());
 app.use(express.json());
 
-const router = require('../router');
+const router = require('./router');
 app.post('/', async (req, res, next) => {
   const [result, error] = await router(req.body);
   if (error) {

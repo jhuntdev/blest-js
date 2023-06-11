@@ -7,7 +7,7 @@ const port = 8080;
 app.use(cors());
 app.use(bodyParser());
 
-const router = require('../router');
+const router = require('./router');
 app.use(async (ctx) => {
   const request = ctx.request;
   const [result, error] = await router(request.body);
