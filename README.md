@@ -6,7 +6,7 @@ To learn more about BLEST, please refer to the white paper: https://jhunt.dev/BL
 
 ## Features
 
-- JSON Payloads - Reduce parsing time and overhead
+- Built on JSON - Reduce parsing time and overhead
 - Request Batching - Save bandwidth and reduce load times
 - Compact Payloads - Save more bandwidth
 - Selective Returns - Save even more bandwidth
@@ -30,43 +30,101 @@ yarn add blest-js
 
 ### Server-side
 
-Use the `create_request_handler` function to create a request handler suitable for use in a NodeJS application. The following example uses Express, but you can find examples with other frameworks [here](/examples).
+Use the `createServer` function to create a standalone HTTP server, or use the `createRequestHandler` function to create a request handler suitable for use in an existing NodeJS application. Both functions allow you to define middleware in your router.
+
+### createServer
 
 ```javascript
-const express = require('express');
-const { createRequestHandler } = require('blest-js');
+const { createServer } = require('blest-js')
 
-const app = express();
-const port = 3000;
+const port = 3000
 
-// Your router implementation
-const router = {
-    greet: async ({ name }) => {
-        return {
-            greeting: `Hi, ${name}!`
-        }
+// Create some middleware (optional)
+const authMiddleware = (params, context) => {
+  if (params?.name) {
+    context.user = {
+      name: params.name
     }
+  } else {
+    throw new Error('Unauthorized')
+  }
+}
+
+// Create a route controller
+const greetController = (params, context) => {
+  return {
+    greeting: `Hi, ${context.user?.name}!`
+  }
+}
+
+// Define your router
+const router = {
+    greet: [authMiddleware, greetController]
+}
+
+// Create a server
+const server = createServer(router)
+
+// Listen for requests
+server.listen(port, () => {
+  console.log(`Server listening on port ${port}`)
+})
+```
+
+#### createRequestHandler
+
+This example uses Express, but you can find examples with other frameworks [here](examples).
+
+```javascript
+const express = require('express')
+const { createRequestHandler } = require('blest-js')
+
+const app = express()
+const port = 3000
+
+// Create some middleware (optional)
+const authMiddleware = (params, context) => {
+  if (params?.name) {
+    context.user = {
+      name: params.name
+    }
+  } else {
+    throw new Error('Unauthorized')
+  }
+}
+
+// Create a route controller
+const greetController = (params, context) => {
+  return {
+    greeting: `Hi, ${context.user?.name}!`
+  }
+}
+
+// Define your router
+const router = {
+    greet: [authMiddleware, greetController]
 }
 
 // Create a request handler
-const requestHandler = createRequestHandler(router);
+const requestHandler = createRequestHandler(router)
 
 // Parse the JSON body
-app.use(express.json());
+app.use(express.json())
 
 // Use the request handler
 app.post('/', async (req, res, next) => {
-  const [result, error] = await requestHandler(req.body);
+  const [result, error] = await requestHandler(req.body)
   if (error) {
-    return next(error);
+    return next(error)
   } else {
-    res.json(result);
+    res.json(result)
   }
 });
 
+// Listen for requests
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+  console.log(`Server listening on port ${port}`)
+})
 ```
 
 ### Client-side
@@ -76,24 +134,30 @@ Client-side libraries assist in batching and processing requests and commands. C
 #### React
 
 ```javascript
-import React from 'react';
-import { useBlestRequest, useBlestCommand } from 'blest-react';
+import React from 'react'
+import { useBlestRequest, useBlestCommand } from 'blest-react'
 
 // Use the useBlestRequest hook for fetching data
 const MyComponent = () => {
-  const { data, loading, error } = useBlestRequest('listItems', { limit: 24 });
+  const { data, loading, error } = useBlestRequest('listItems', { limit: 24 })
 
-  // Render your component
-  // ...
-};
+  return (
+    // Render your component
+  )
+}
 
 // Use the useBlestCommand hook for sending data
 const MyForm = () => {
-  const [submitMyForm, { data, loading, error }] = useBlestCommand('submitForm');
+  const [submitMyForm, { data, loading, error }] = useBlestCommand('submitForm')
+  
+  const handleSubmit = (values) => {
+    return submitMyForm(values)
+  }
 
-  // Render your form
-  // ...
-};
+  return (
+    // Render your form
+  )
+}
 ```
 
 ## Contributing

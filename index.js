@@ -37,7 +37,66 @@
   -------------------------------------------------------------------------------------------------
 */
 
-export const createRequestHandler = (routes, options) => {
+const http = require('http')
+
+const createServer = (routes, options) => {
+
+  const requestHandler = createRequestHandler(routes, options)
+
+  const server = http.createServer((req, res) => {
+    if (req.url === '/') {
+      if (req.method === 'POST') {
+        let body = ''
+        req.on('data', (chunk) => {
+          body += chunk
+        })
+        req.on('end', async () => {
+          let jsonData
+          try {
+            jsonData = JSON.parse(body)
+          } catch (error) {
+            console.error(error)
+            res.statusCode = 400
+            res.end(error.message)
+          }
+          try {
+
+            const context = {
+              headers: req.headers
+            }
+            const [result, error] = await requestHandler(jsonData, context)
+            if (error) {
+              res.statusCode = 500
+              res.end(error.message)
+            } else if (result) {
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify(result))
+            } else {
+              res.statusCode = 204
+              res.end()
+            }
+
+          } catch (error) {
+            console.error(error)
+            res.statusCode = 500
+            res.end(error.message)
+          }
+        })
+      } else {
+        res.statusCode = 405
+        res.end()
+      }
+    } else {
+      res.statusCode = 404
+      res.end()
+    }
+  })
+
+  return server
+
+}
+
+const createRequestHandler = (routes, options) => {
 
   if (options) {
     console.warn('The "options" argument is not yet used, but may be used in the future.')
@@ -79,6 +138,11 @@ export const createRequestHandler = (routes, options) => {
 
 }
 
+module.exports = {
+  createServer,
+  createRequestHandler
+}
+
 const handleResult = (result) => {
   return [result]
 }
@@ -97,16 +161,31 @@ const routeNotFound = () => {
 
 const routeReducer = async (handler, [id, endpoint, params, selector], context) => {
   try {
-    let result = await handler(params, context)
-    if (typeof result !== 'object' || Array.isArray(result)) {
-      result = null
-      error = new Error('Result should be a JSON object')
+    const safeContext = JSON.parse(JSON.stringify(context))
+    let result
+    if (Array.isArray(handler)) {
+      for (let i = 0; i < handler.length; i++) {
+        const tempResult = await handler[i](params, safeContext)
+        if (i === handler.length - 1) {
+          result = tempResult
+        } else {
+          if (tempResult) {
+            throw new Error('Middleware should not return anything but may mutate context')
+          }
+        }
+      }
+    } else {
+      result = await handler(params, safeContext)
     }
-    if (selector) {
+    if (result && (typeof result !== 'object' || Array.isArray(result))) {
+      throw new Error('The result, if any, should be a JSON object')
+    }
+    if (result && selector) {
       result = filterObject(result, selector)
     }
     return [id, endpoint, result]
   } catch (error) {
+    console.error(error)
     return [id, endpoint, null, { message: error.message }]
   }
 }
