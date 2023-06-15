@@ -161,7 +161,7 @@ const routeNotFound = () => {
 
 const routeReducer = async (handler, [id, endpoint, params, selector], context) => {
   try {
-    const safeContext = JSON.parse(JSON.stringify(context))
+    const safeContext = context ? JSON.parse(JSON.stringify(context)) : {}
     let result
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {

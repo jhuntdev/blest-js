@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "JHunt <blest@jhunt.dev>",
   "license": "MIT",
   "dependencies": {
-    "blest-js": "^0.0.5",
+    "blest-js": "^0.0.7",
     "cors": "^2.8.5",
     "express": "^4.18.2"
   }

@@ -1,6 +1,6 @@
 {
   "name": "blest-js",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "The JavaScript reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST.",
   "keywords": ["blest", "api", "js", "javascript", "node", "nodejs", "express", "connect", "hapi", "fastify", "koa"],
   "main": "index.js",
@@ -9,8 +9,7 @@
     "url": "https://github.com/jhuntdev/blest-js"
   },
   "directories": {
-    "example": "examples",
-    "react": "react"
+    "examples": "examples"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
