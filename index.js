@@ -221,7 +221,7 @@ module.exports = {
 }
 
 const handleResult = (result) => {
-  return [result]
+  return [result, null]
 }
 
 const handleError = (code, message, headers) => {
