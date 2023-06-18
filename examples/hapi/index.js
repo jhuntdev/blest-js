@@ -1,4 +1,31 @@
 const Hapi = require('@hapi/hapi');
+const { createRequestHandler } = require('blest-js');
+
+const requestHandler = createRequestHandler({
+  hello: () => {
+    return {
+      hello: 'world',
+      bonjour: 'le monde',
+      hola: 'mundo',
+      hallo: 'welt'
+    }
+  },
+  greet: [
+    ({ name }, context) => {
+        context.user = {
+            name: name || 'Tarzan'
+        }
+    },
+    ({ name }, context) => {
+        return {
+            geeting: `Hi, ${context.user.name}!`
+        }
+    }
+  ],
+  fail: () => {
+    throw new Error('Intentional failure')
+  }
+});
 
 const init = async () => {
   const server = Hapi.server({
@@ -9,12 +36,11 @@ const init = async () => {
     }
   });
 
-  const router = require('./router');
   server.route({
     method: 'POST',
     path: '/',
     handler: async (request, h) => {
-      const [result, error] = await router(request.payload);
+      const [result, error] = await requestHandler(request.payload);
       if (error) {
         return h.response(error).code(500).type('application/json')
       } else {

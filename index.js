@@ -38,10 +38,14 @@
 */
 
 const http = require('http')
+const events = require('events')
+const { v4: uuidv4 } = require('uuid')
 
-const createServer = (routes, options) => {
-
-  const requestHandler = createRequestHandler(routes, options)
+const createHttpServer = (requestHandler, options) => {
+  
+  if (options) {
+    console.warn('The "options" argument is not yet used, but may be used in the future.')
+  }
 
   const server = http.createServer((req, res) => {
     if (req.url === '/') {
@@ -96,6 +100,78 @@ const createServer = (routes, options) => {
 
 }
 
+const createHttpClient = (url, options) => {
+
+  if (options) {
+    console.warn('The "options" argument is not yet used, but may be used in the future.')
+  }
+
+  const maxBatchSize = 100
+  let queue = []
+  let timeout = null
+  const emitter = new events.EventEmitter()
+
+  const process = () => {
+    const newQueue = queue.splice(0, maxBatchSize)
+    clearTimeout(timeout)
+    if (!queue.length) {
+      timeout = null
+    } else {
+      timeout = setTimeout(() => {
+        process()
+      }, 1)
+    }
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newQueue)
+    })
+    .then(async (result) => {
+      const data = await result.json()
+      data.forEach((r) => {
+        emitter.emit(r[0], r[2], r[3])
+      })
+    })
+    .catch((error) => {
+      newQueue.forEach((q) => {
+        emitter.emit(q[0], null, error)
+      })
+    })
+  }
+
+  const request = (route, params, selector) => {
+    return new Promise((resolve, reject) => {
+      if (!route) {
+        return reject(new Error('Route is required'))
+      } else if (params && typeof params !== 'object') {
+        return reject(new Error('Params should be an object'))
+      } else if (selector && !Array.isArray(selector)) {
+        return reject(new Error('Selector should be an array'))
+      }
+      const id = uuidv4()
+      emitter.once(id, (result, error) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(result)
+        }
+      })
+      queue.push([id, route, params || null, selector || null])
+      if (!timeout) {
+        timeout = setTimeout(() => {
+          process()
+        }, 1)
+      }
+    })
+  }
+
+  return request
+
+}
+
 const createRequestHandler = (routes, options) => {
 
   if (options) {
@@ -139,7 +215,8 @@ const createRequestHandler = (routes, options) => {
 }
 
 module.exports = {
-  createServer,
+  createHttpServer,
+  createHttpClient,
   createRequestHandler
 }
 
@@ -183,7 +260,7 @@ const routeReducer = async (handler, [id, endpoint, params, selector], context) 
     if (result && selector) {
       result = filterObject(result, selector)
     }
-    return [id, endpoint, result]
+    return [id, endpoint, result, null]
   } catch (error) {
     console.error(error)
     return [id, endpoint, null, { message: error.message }]

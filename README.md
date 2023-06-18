@@ -1,8 +1,10 @@
 # BLEST.js
 
-The JavaScript reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
+The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
 
 To learn more about BLEST, please refer to the white paper: https://jhunt.dev/BLEST%20White%20Paper.pdf
+
+For a front-end implementation in React, please visit https://github.com/jhunt/blest-react
 
 ## Features
 
@@ -28,48 +30,7 @@ yarn add blest-js
 
 ## Usage
 
-### Server-side
-
-Use the `createServer` function to create a standalone HTTP server, or use the `createRequestHandler` function to create a request handler suitable for use in an existing NodeJS application. Both functions allow you to define middleware in your router.
-
-### createServer
-
-```javascript
-const { createServer } = require('blest-js')
-
-const port = 3000
-
-// Create some middleware (optional)
-const authMiddleware = (params, context) => {
-  if (params?.name) {
-    context.user = {
-      name: params.name
-    }
-  } else {
-    throw new Error('Unauthorized')
-  }
-}
-
-// Create a route controller
-const greetController = (params, context) => {
-  return {
-    greeting: `Hi, ${context.user?.name}!`
-  }
-}
-
-// Define your router
-const router = {
-    greet: [authMiddleware, greetController]
-}
-
-// Create a server
-const server = createServer(router)
-
-// Listen for requests
-server.listen(port, () => {
-  console.log(`Server listening on port ${port}`)
-})
-```
+Use the `createRequestHandler` function to create a request handler suitable for use in an existing NodeJS application. Use the `createHttpServer` function to create a standalone HTTP server for your request handler. Use the `createHttpClient` to create a BLEST client to interact with other BLEST HTTP servers.
 
 #### createRequestHandler
 
@@ -80,7 +41,7 @@ const express = require('express')
 const { createRequestHandler } = require('blest-js')
 
 const app = express()
-const port = 3000
+const port = 8080
 
 // Create some middleware (optional)
 const authMiddleware = (params, context) => {
@@ -100,13 +61,10 @@ const greetController = (params, context) => {
   }
 }
 
-// Define your router
-const router = {
-    greet: [authMiddleware, greetController]
-}
-
 // Create a request handler
-const requestHandler = createRequestHandler(router)
+const requestHandler = createRequestHandler({
+    greet: [authMiddleware, greetController]
+})
 
 // Parse the JSON body
 app.use(express.json())
@@ -127,37 +85,61 @@ app.listen(port, () => {
 })
 ```
 
-### Client-side
-
-Client-side libraries assist in batching and processing requests and commands. Currently available for React with other frameworks coming soon.
-
-#### React
+#### createHttpServer
 
 ```javascript
-import React from 'react'
-import { useBlestRequest, useBlestCommand } from 'blest-react'
+const { createHttpServer } = require('blest-js')
 
-// Use the useBlestRequest hook for fetching data
-const MyComponent = () => {
-  const { data, loading, error } = useBlestRequest('listItems', { limit: 24 })
+const port = 8080
 
-  return (
-    // Render your component
-  )
-}
-
-// Use the useBlestCommand hook for sending data
-const MyForm = () => {
-  const [submitMyForm, { data, loading, error }] = useBlestCommand('submitForm')
-  
-  const handleSubmit = (values) => {
-    return submitMyForm(values)
+// Create some middleware (optional)
+const authMiddleware = (params, context) => {
+  if (params?.name) {
+    context.user = {
+      name: params.name
+    }
+  } else {
+    throw new Error('Unauthorized')
   }
-
-  return (
-    // Render your form
-  )
 }
+
+// Create a route controller
+const greetController = (params, context) => {
+  return {
+    greeting: `Hi, ${context.user?.name}!`
+  }
+}
+
+// Create a request handler
+const requestHandler = createRequestHandler({
+    greet: [authMiddleware, greetController]
+})
+
+// Create a server
+const server = createHttpServer(requestHandler)
+
+// Listen for requests
+server.listen(port, () => {
+  console.log(`Server listening on port ${port}`)
+})
+```
+
+#### createHttpClient
+
+```javascript
+const { createHttpClient } = require('blest-js')
+
+// Create a client
+const request = createHttpClient('http://localhost:8080')
+
+// Send a request
+request('greet', { name: 'Steve' }, ['greeting'])
+.then((result) => {
+  // Do something with the result
+})
+.catch((error) => {
+  // Do something in case of error
+})
 ```
 
 ## Contributing
