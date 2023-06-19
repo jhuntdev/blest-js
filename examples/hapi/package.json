@@ -11,6 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
-    "blest-js": "^0.0.7"
+    "blest-js": "^0.0.9"
   }
 }

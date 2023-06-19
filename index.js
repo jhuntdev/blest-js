@@ -178,7 +178,7 @@ const createRequestHandler = (routes, options) => {
     console.warn('The "options" argument is not yet used, but may be used in the future.')
   }
 
-  const handler = async (requests, context) => {
+  const handler = async (requests, context = {}) => {
 
     if (!requests || typeof requests !== 'object' || !Array.isArray(requests)) return handleError(400, 'Request body should be a JSON array')
 
@@ -238,7 +238,7 @@ const routeNotFound = () => {
 
 const routeReducer = async (handler, [id, endpoint, params, selector], context) => {
   try {
-    const safeContext = context ? JSON.parse(JSON.stringify(context)) : {}
+    const safeContext = context ? cloneDeep(context) : {}
     let result
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
@@ -301,4 +301,25 @@ function filterObject(obj, arr) {
     return filteredObj
   }
   return {}
+}
+
+function cloneDeep(value) {
+  if (typeof value !== 'object' || value === null) {
+    return value
+  }
+  let clonedValue
+  if (Array.isArray(value)) {
+    clonedValue = []
+    for (let i = 0; i < value.length; i++) {
+      clonedValue[i] = cloneDeep(value[i])
+    }
+  } else {
+    clonedValue = {}
+    for (let key in value) {
+      if (value.hasOwnProperty(key)) {
+        clonedValue[key] = cloneDeep(value[key])
+      }
+    }
+  }
+  return clonedValue
 }
