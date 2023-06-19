@@ -33,7 +33,9 @@ const requestHandler = createRequestHandler({
 });
 
 fastify.post('/', async (request, reply) => {
-  const [result, error] = await requestHandler(request.body);
+  const [result, error] = await requestHandler(request.body, {
+    headers: request.headers
+  });
   if (error) {
     return reply.code(500).type('application/json').send(error)
   } else {

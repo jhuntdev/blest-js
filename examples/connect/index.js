@@ -36,7 +36,9 @@ const requestHandler = createRequestHandler({
 });
 
 app.use('/', async (req, res) => {
-  const [result, error] = await requestHandler(req.body);
+  const [result, error] = await requestHandler(req.body, {
+    headers: req.headers
+  });
   if (error) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(error));

@@ -71,7 +71,9 @@ app.use(express.json())
 
 // Use the request handler
 app.post('/', async (req, res, next) => {
-  const [result, error] = await requestHandler(req.body)
+  const [result, error] = await requestHandler(req.body, {
+    headers: req.headers
+  })
   if (error) {
     return next(error)
   } else {
@@ -130,7 +132,11 @@ server.listen(port, () => {
 const { createHttpClient } = require('blest-js')
 
 // Create a client
-const request = createHttpClient('http://localhost:8080')
+const request = createHttpClient('http://localhost:8080', {
+  headers: {
+    'Authorization': 'Bearer token'
+  }
+})
 
 // Send a request
 request('greet', { name: 'Steve' }, ['greeting'])

@@ -37,7 +37,9 @@ const requestHandler = createRequestHandler({
 
 app.use(async (ctx) => {
   const request = ctx.request;
-  const [result, error] = await requestHandler(request.body);
+  const [result, error] = await requestHandler(request.body, {
+    headers: ctx.request.headers
+  });
   ctx.type = 'application/json';
   if (error) {
     ctx.status = 500;

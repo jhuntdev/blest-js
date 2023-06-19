@@ -40,7 +40,9 @@ const init = async () => {
     method: 'POST',
     path: '/',
     handler: async (request, h) => {
-      const [result, error] = await requestHandler(request.payload);
+      const [result, error] = await requestHandler(request.payload, {
+        headers: request.headers
+      });
       if (error) {
         return h.response(error).code(500).type('application/json')
       } else {

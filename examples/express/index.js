@@ -35,7 +35,9 @@ const requestHandler = createRequestHandler({
 });
 
 app.post('/', async (req, res, next) => {
-  const [result, error] = await requestHandler(req.body);
+  const [result, error] = await requestHandler(req.body, {
+    headers: req.headers
+  });
   if (error) {
     return next(error);
   } else {
