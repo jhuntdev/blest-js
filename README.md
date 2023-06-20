@@ -30,7 +30,7 @@ yarn add blest-js
 
 ## Usage
 
-Use the `createRequestHandler` function to create a request handler suitable for use in an existing NodeJS application. Use the `createHttpServer` function to create a standalone HTTP server for your request handler. Use the `createHttpClient` to create BLEST HTTP clients to interact with other servers.
+Use the `createRequestHandler` function to create a request handler suitable for use in an existing NodeJS application. Use the `createHttpServer` function to create a standalone HTTP server for your request handler. Use the `createHttpClient` function to create a BLEST HTTP client.
 
 ### createRequestHandler
 
