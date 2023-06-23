@@ -148,10 +148,6 @@ request('greet', { name: 'Steve' }, ['greeting'])
 })
 ```
 
-## Contributing
-
-We actively welcome pull requests. Learn how to [contribute](CONTRIBUTING.md) for more information.
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

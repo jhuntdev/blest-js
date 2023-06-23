@@ -175,32 +175,65 @@ const createHttpClient = (url, options) => {
 const createRequestHandler = (routes, options) => {
 
   if (options) {
-    console.warn('The "options" argument is not yet used, but may be used in the future.')
+    console.warn('The "options" argument is not yet used, but may be used in the future')
   }
+
+  const routeRegex = /^[a-zA-Z][a-zA-Z0-9_\-\/]*[a-zA-Z0-9_\-]$/
 
   const handler = async (requests, context = {}) => {
 
     if (!requests || typeof requests !== 'object' || !Array.isArray(requests)) return handleError(400, 'Request body should be a JSON array')
 
-    const dedupe = []
+    const uniqueIds = []
     const promises = []
 
     for (let i = 0; i < requests.length; i++) {
 
       const request = requests[i]
-      
-      if (!Array.isArray(request) || request.length < 2 || typeof request[0] !== 'string' || typeof request[1] !== 'string') {
-        return handleError(400, 'Request items should be an array with a unique ID and an endpoint')
+
+      if (!Array.isArray(request)) {
+        return handleError(400, 'Request item should be an array')
       }
-      if (request[2] && typeof request[2] !== 'object') return handleError(400, 'Request item parameters should be a JSON object')
-      if (request[3] && !Array.isArray(request[3])) return handleError(400, 'Request item selector should be a JSON array')
 
-      if (dedupe.indexOf(request[0]) > -1) return handleError(400, 'Request items should have unique IDs')
-      dedupe.push(request[0])
+      const id = request[0]
+      const route = request[1]
+      const parameters = request[2] || null
+      const selector = request[3] || null
+      
+      if (!id || typeof id !== 'string') {
+        return handleError(400, 'Request item should have an ID')
+      }
+      if (!route || typeof route !== 'string') {
+        return handleError(400, 'Request item should have a route')
+      }
+      if (!routeRegex.test(route)) {
+        const routeLength = route.length
+        if (routeLength < 2) {
+          return handleError(400, 'Request item route should be at least two characters long')
+        } else if (route.charAt(routeLength - 1) === '/') {
+          return handleError(400, 'Request item route should not end in a forward slash')
+        } else if (!/[a-zA-Z]/.test(route.charAt(0))) {
+          return handleError(400, 'Request item route should start with a letter')
+        } else {
+          return handleError(400, 'Request item route should contain only letters, numbers, dashes, underscores, and forward slashes')
+        }
+      }
+      if (parameters && typeof parameters !== 'object') return handleError(400, 'Request item parameters should be a JSON object')
+      if (selector && !Array.isArray(selector)) return handleError(400, 'Request item selector should be a JSON array')
 
-      const routeHandler = routes[request[1]] || routeNotFound
+      if (uniqueIds.indexOf(id) > -1) return handleError(400, 'Request items should have unique IDs')
+      uniqueIds.push(id)
 
-      promises.push(routeReducer(routeHandler, request, context))
+      const routeHandler = routes[route] || routeNotFound
+
+      const requestObject = {
+        id,
+        route,
+        parameters,
+        selector
+      }
+
+      promises.push(routeReducer(routeHandler, requestObject, context))
 
     }
 
@@ -236,13 +269,13 @@ const routeNotFound = () => {
   throw new Error('Route not found')
 }
 
-const routeReducer = async (handler, [id, endpoint, params, selector], context) => {
+const routeReducer = async (handler, { id, route, parameters, selector }, context) => {
   try {
     const safeContext = context ? cloneDeep(context) : {}
     let result
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
-        const tempResult = await handler[i](params, safeContext)
+        const tempResult = await handler[i](parameters, safeContext)
         if (i === handler.length - 1) {
           result = tempResult
         } else {
@@ -252,7 +285,7 @@ const routeReducer = async (handler, [id, endpoint, params, selector], context) 
         }
       }
     } else {
-      result = await handler(params, safeContext)
+      result = await handler(parameters, safeContext)
     }
     if (result && (typeof result !== 'object' || Array.isArray(result))) {
       throw new Error('The result, if any, should be a JSON object')
@@ -260,10 +293,10 @@ const routeReducer = async (handler, [id, endpoint, params, selector], context) 
     if (result && selector) {
       result = filterObject(result, selector)
     }
-    return [id, endpoint, result, null]
+    return [id, route, result, null]
   } catch (error) {
     console.error(error)
-    return [id, endpoint, null, { message: error.message }]
+    return [id, route, null, { message: error.message }]
   }
 }
 
