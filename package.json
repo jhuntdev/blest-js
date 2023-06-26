@@ -1,12 +1,13 @@
 {
   "name": "blest-js",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST.",
   "keywords": [
     "blest",
     "api",
     "js",
     "javascript",
+    "typescript",
     "node",
     "nodejs",
     "express",
@@ -15,7 +16,7 @@
     "fastify",
     "koa"
   ],
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/jhuntdev/blest-js"
@@ -24,11 +25,18 @@
     "examples": "examples"
   },
   "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "JHunt <blest@jhunt.dev>",
   "license": "MIT",
   "dependencies": {
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "@types/uuid": "^9.0.2",
+    "typescript": "^5.1.3"
   }
 }
