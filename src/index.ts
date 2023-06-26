@@ -333,42 +333,41 @@ const routeReducer = async (
   }
 };
 
-function filterObject(obj: { [key: string]: any | null | undefined }, arr?: object[] | null): { [key: string]: any } {
-  if (arr !== null && arr !== undefined) {
-    const filteredObj: { [key: string]: any } = {};
-    for (const key of arr) {
-      if (typeof key === "string" && obj.hasOwnProperty(key)) {
-        filteredObj[key] = obj[key];
-      } else if (Array.isArray(key) && key.length === 2) {
-        const nestedObj = obj.hasOwnProperty(key[0]?.toString() ?? "") ? obj[key[0]?.toString() ?? ""] : null;
-        const nestedArr = key[1] as object[] | null;
-
+const filterObject = (obj: any, arr: any[]): any => {
+  if (Array.isArray(arr)) {
+    const filteredObj: any = {};
+    for (let i = 0; i < arr.length; i++) {
+      const key = arr[i];
+      if (typeof key === 'string') {
+        if (obj.hasOwnProperty(key)) {
+          filteredObj[key] = obj[key];
+        }
+      } else if (Array.isArray(key)) {
+        const nestedObj = obj[key[0]];
+        const nestedArr = key[1];
         if (Array.isArray(nestedObj)) {
           const filteredArr: any[] = [];
-          for (const nested of nestedObj) {
-            if (typeof nested === "object" && nested !== null) {
-              const filteredNestedObj = filterObject(nested as { [key: string]: any | null | undefined }, nestedArr);
-              if (Object.keys(filteredNestedObj).length > 0) {
-                filteredArr.push(filteredNestedObj);
-              }
+          for (let j = 0; j < nestedObj.length; j++) {
+            const filteredNestedObj = filterObject(nestedObj[j], nestedArr);
+            if (Object.keys(filteredNestedObj).length > 0) {
+              filteredArr.push(filteredNestedObj);
             }
           }
-
           if (filteredArr.length > 0) {
-            filteredObj[key[0]?.toString() ?? ""] = filteredArr;
+            filteredObj[key[0]] = filteredArr;
           }
-        } else if (typeof nestedObj === "object" && nestedObj !== null) {
-          const filteredNestedObj = filterObject(nestedObj as { [key: string]: any | null | undefined }, nestedArr);
+        } else if (typeof nestedObj === 'object' && nestedObj !== null) {
+          const filteredNestedObj = filterObject(nestedObj, nestedArr);
           if (Object.keys(filteredNestedObj).length > 0) {
-            filteredObj[key[0]?.toString() ?? ""] = filteredNestedObj;
+            filteredObj[key[0]] = filteredNestedObj;
           }
         }
       }
     }
     return filteredObj;
   }
-  return {};
-}
+  return obj;
+};
 
 function cloneDeep(value: any): any {
   if (typeof value !== 'object' || value === null) {

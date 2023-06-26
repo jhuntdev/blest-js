@@ -18,7 +18,7 @@ const requestHandler = createRequestHandler({
     },
     ({ name }, context) => {
         return {
-            geeting: `Hi, ${context.user.name}!`
+            greeting: `Hi, ${context.user.name}!`
         }
     }
   ],

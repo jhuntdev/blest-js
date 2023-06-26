@@ -326,43 +326,43 @@ const routeReducer = async (handler, { id, route, parameters, selector }, contex
         return [id, route, null, { message: error.message }];
     }
 };
-function filterObject(obj, arr) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
-    if (arr !== null && arr !== undefined) {
+const filterObject = (obj, arr) => {
+    if (Array.isArray(arr)) {
         const filteredObj = {};
-        for (const key of arr) {
-            if (typeof key === "string" && obj.hasOwnProperty(key)) {
-                filteredObj[key] = obj[key];
+        for (let i = 0; i < arr.length; i++) {
+            const key = arr[i];
+            if (typeof key === 'string') {
+                if (obj.hasOwnProperty(key)) {
+                    filteredObj[key] = obj[key];
+                }
             }
-            else if (Array.isArray(key) && key.length === 2) {
-                const nestedObj = obj.hasOwnProperty((_b = (_a = key[0]) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : "") ? obj[(_d = (_c = key[0]) === null || _c === void 0 ? void 0 : _c.toString()) !== null && _d !== void 0 ? _d : ""] : null;
+            else if (Array.isArray(key)) {
+                const nestedObj = obj[key[0]];
                 const nestedArr = key[1];
                 if (Array.isArray(nestedObj)) {
                     const filteredArr = [];
-                    for (const nested of nestedObj) {
-                        if (typeof nested === "object" && nested !== null) {
-                            const filteredNestedObj = filterObject(nested, nestedArr);
-                            if (Object.keys(filteredNestedObj).length > 0) {
-                                filteredArr.push(filteredNestedObj);
-                            }
+                    for (let j = 0; j < nestedObj.length; j++) {
+                        const filteredNestedObj = filterObject(nestedObj[j], nestedArr);
+                        if (Object.keys(filteredNestedObj).length > 0) {
+                            filteredArr.push(filteredNestedObj);
                         }
                     }
                     if (filteredArr.length > 0) {
-                        filteredObj[(_f = (_e = key[0]) === null || _e === void 0 ? void 0 : _e.toString()) !== null && _f !== void 0 ? _f : ""] = filteredArr;
+                        filteredObj[key[0]] = filteredArr;
                     }
                 }
-                else if (typeof nestedObj === "object" && nestedObj !== null) {
+                else if (typeof nestedObj === 'object' && nestedObj !== null) {
                     const filteredNestedObj = filterObject(nestedObj, nestedArr);
                     if (Object.keys(filteredNestedObj).length > 0) {
-                        filteredObj[(_h = (_g = key[0]) === null || _g === void 0 ? void 0 : _g.toString()) !== null && _h !== void 0 ? _h : ""] = filteredNestedObj;
+                        filteredObj[key[0]] = filteredNestedObj;
                     }
                 }
             }
         }
         return filteredObj;
     }
-    return {};
-}
+    return obj;
+};
 function cloneDeep(value) {
     if (typeof value !== 'object' || value === null) {
         return value;
