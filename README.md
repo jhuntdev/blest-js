@@ -4,7 +4,7 @@ The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted
 
 To learn more about BLEST, please refer to the white paper: https://jhunt.dev/BLEST%20White%20Paper.pdf
 
-For a front-end implementation in React, please visit https://github.com/jhunt/blest-react
+For a front-end implementation in React, please visit https://github.com/jhuntdev/blest-react
 
 ## Features
 
