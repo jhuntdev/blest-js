@@ -22,6 +22,7 @@
     "type": "git",
     "url": "https://github.com/jhuntdev/blest-js"
   },
+  "homepage": "https://blest.jhunt.dev",
   "directories": {
     "examples": "examples"
   },
