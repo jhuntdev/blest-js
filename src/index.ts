@@ -41,7 +41,7 @@ import { Router } from './router';
 export { Router } from './router';
 export { HTTPServer, createHttpServer } from './server';
 export { HTTPClient, createHttpClient } from './client';
-// export { createRequestHandler } from './handler';
+export { createRequestHandler } from './handler';
 
 export default (config: any) => {
   return new Router(config);
