@@ -30,7 +30,42 @@ yarn add blest-js
 
 ## Usage
 
-Use the `createRequestHandler` function to create a request handler suitable for use in an existing NodeJS application. Use the `createHttpServer` function to create a standalone HTTP server for your request handler. Use the `createHttpClient` function to create a BLEST HTTP client.
+This default export of this library is an API very similar to Express or Connect. For convenience it also provides a `createRequestHandler` function to create a request handler suitable for use in an existing application, a `createHttpServer` function to create a standalone HTTP server, and a `createHttpClient` function to create a BLEST HTTP client.
+
+```javascript
+const express = require('express')
+const blest = require('blest-js')
+
+const app = blest({
+  timeout: 1000,
+  logger: console.log
+})
+const port = 8080
+
+const authMiddleware = (params, context) => {
+  if (params?.name) {
+    context.user = {
+      name: params.name
+    }
+  } else {
+    throw new Error('Unauthorized')
+  }
+}
+
+const greetController = (params, context) => {
+  return {
+    greeting: `Hi, ${context.user?.name}!`
+  }
+}
+
+app.use(authMiddleware)
+
+app.route('greet', greetController)
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`)
+})
+```
 
 ### createRequestHandler
 
