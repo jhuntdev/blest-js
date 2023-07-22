@@ -2,8 +2,6 @@ import http from 'http';
 import events from 'events';
 import { v4 as uuidv4 } from 'uuid';
 
-export class HTTPClient {}
-
 export const createHttpClient = (url: string, options?: any) => {
     if (options) {
         console.warn('The "options" argument is not yet used, but may be used in the future.');

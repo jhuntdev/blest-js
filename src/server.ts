@@ -1,20 +1,5 @@
 import * as http from 'http';
 
-export class HTTPServer {
-
-  private server;
-  public listen: any;
-
-  constructor(requestHandler: (requests: any, context: any) => Promise<[any?, Error?]>) {
-    if (!requestHandler) {
-      throw new Error('Missing request handler');
-    }
-    this.server = createHttpServer(requestHandler);
-    this.listen = this.server.listen;
-  }
-
-}
-
 export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any?, Error?]>, options?: any): http.Server => {
   
   if (options) {
