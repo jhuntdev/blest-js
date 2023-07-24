@@ -37,8 +37,7 @@ const express = require('express')
 const blest = require('blest-js')
 
 const app = blest({
-  timeout: 1000,
-  logger: console.log
+  timeout: 1000
 })
 const port = 8080
 
