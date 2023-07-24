@@ -158,4 +158,27 @@ describe('Router', async () => {
         expect(benchmarks.length).to.equal(3);
     });
 
+    it('should throw an error for invalid routes', () => {
+        expect(() => router.route('a')).to.throw();
+        expect(() => router.route('0abc')).to.throw();
+        expect(() => router.route('_abc')).to.throw();
+        expect(() => router.route('-abc')).to.throw();
+        expect(() => router.route('abc_')).to.throw();
+        expect(() => router.route('abc-')).to.throw();
+        expect(() => router.route('ab/abc')).to.throw();
+        expect(() => router.route('abc/ab')).to.throw();
+        expect(() => router.route('abc/0abc')).to.throw();
+        expect(() => router.route('abc/_abc')).to.throw();
+        expect(() => router.route('abc/-abc')).to.throw();
+        expect(() => router.route('abc/')).to.throw();
+        expect(() => router.route('/abc')).to.throw();
+        expect(() => router.route('abc//abc')).to.throw();
+        expect(() => router.route('abc/a/abc')).to.throw();
+        expect(() => router.route('abc/0abc/abc')).to.throw();
+        expect(() => router.route('abc/_abc/abc')).to.throw();
+        expect(() => router.route('abc/-abc/abc')).to.throw();
+        expect(() => router.route('abc/abc_/abc')).to.throw();
+        expect(() => router.route('abc/abc-/abc')).to.throw();
+    })
+
 });
