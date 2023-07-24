@@ -89,10 +89,6 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     if (!route || typeof route !== 'string') {
         return handleError(400, 'Request item should have a route');
     }
-    const routeError = validateRoute(route);
-    if (routeError) {
-      return handleError(400, routeError);
-    }
     if (parameters && typeof parameters !== 'object')
         return handleError(400, 'Request item parameters should be a JSON object');
     if (selector && !Array.isArray(selector))
@@ -101,7 +97,7 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     if (uniqueIds.indexOf(id) > -1) return handleError(400, 'Request items should have unique IDs');
     uniqueIds.push(id);
 
-    const thisRoute = routes[route];
+    const thisRoute = routes.hasOwnProperty(route) ? routes[route] : null;
     const routeHandler = thisRoute?.handler || thisRoute || routeNotFound;
 
     const requestObject = {
