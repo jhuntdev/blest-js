@@ -5,7 +5,8 @@ import { createHttpServer } from './server';
 export class Router {
 
   private introspection: boolean = false;
-  private middleware: any[] = [];
+  private beforeMiddleware: any[] = [];
+  private afterMiddleware: any[] = [];
   private timeout: number = 0;
 
   public routes: any = {};
@@ -25,13 +26,30 @@ export class Router {
     }
   }
 
-  public use(...handlers: any[]) {
+  public before(...handlers: any[]) {
 
     for (let i = 0; i < handlers.length; i++) {
       if (typeof handlers[i] !== 'function') {
         throw new Error('All arguments should be functions');
       }
-      this.middleware.push(handlers[i]);
+      this.beforeMiddleware.push(handlers[i]);
+      const routeNames = Object.keys(this.routes)
+      for (let j = 0; j < routeNames.length; j++) {
+        this.routes[routeNames[j]].handler.push(handlers[i])
+      }
+    }
+
+  }
+
+  public use = this.before;
+
+  public after(...handlers: any[]) {
+
+    for (let i = 0; i < handlers.length; i++) {
+      if (typeof handlers[i] !== 'function') {
+        throw new Error('All arguments should be functions');
+      }
+      this.afterMiddleware.push(handlers[i]);
       const routeNames = Object.keys(this.routes)
       for (let j = 0; j < routeNames.length; j++) {
         this.routes[routeNames[j]].handler.push(handlers[i])
@@ -64,7 +82,7 @@ export class Router {
     }
 
     this.routes[route] = {
-      handler: [...this.middleware, ...handlers],
+      handler: [...this.beforeMiddleware, ...handlers, ...this.afterMiddleware],
       description: null,
       parameters: null,
       result: null,
@@ -87,22 +105,22 @@ export class Router {
       throw new Error('Configuration should be an object');
     }
 
-    if (config.description) {
-      if (typeof config.description !== 'string') {
+    if (config.description !== undefined) {
+      if (config.description && typeof config.description !== 'string') {
         throw new Error('Description should be a string');
       }
       this.routes[route].description = config.description;
     }
 
-    if (config.parameters) {
-      if (typeof config.parameters !== 'object') {
+    if (config.parameters !== undefined) {
+      if (config.parameters && typeof config.parameters !== 'object') {
         throw new Error('Parameters should be a JSON schema');
       }
       this.routes[route].parameters = config.parameters;
     }
 
-    if (config.result) {
-      if (typeof config.result !== 'object') {
+    if (config.result !== undefined) {
+      if (config.result && typeof config.result !== 'object') {
         throw new Error('Result should be a JSON schema');
       }
       this.routes[route].result = config.result;
@@ -153,7 +171,7 @@ export class Router {
       } else {
         this.routes[route] = {
           ...router.routes[route],
-          handler: [...this.middleware, ...router.routes[route].handler],
+          handler: [...this.beforeMiddleware, ...router.routes[route].handler, ...this.afterMiddleware],
           timeout: router.routes[route].timeout || this.timeout
         };
       }
@@ -187,7 +205,7 @@ export class Router {
       } else {
         this.routes[nsRoute] = {
           ...router.routes[route],
-          handler: [...this.middleware, ...router.routes[route].handler],
+          handler: [...this.beforeMiddleware, ...router.routes[route].handler, ...this.afterMiddleware],
           timeout: router.routes[route].timeout || this.timeout
         };
       }

@@ -1,10 +1,13 @@
 export declare class Router {
     private introspection;
-    private middleware;
+    private beforeMiddleware;
+    private afterMiddleware;
     private timeout;
     routes: any;
     constructor(options: any);
-    use(...handlers: any[]): void;
+    before(...handlers: any[]): void;
+    use: (...handlers: any[]) => void;
+    after(...handlers: any[]): void;
     route(route: string, ...args: any[]): void;
     describe(route: string, config: any): void;
     merge(router: Router): void;

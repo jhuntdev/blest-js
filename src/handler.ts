@@ -7,11 +7,13 @@ export const createRequestHandler = (routes: { [key: string]: any }) => {
     }
   
     const routeKeys = Object.keys(routes);
+    const myRoutes:any = {};
   
     for (let i = 0; i < routeKeys.length; i++) {
       const key = routeKeys[i];
-      if (!validateRoute(key)) {
-        throw new Error('Route is not valid: ' + key);
+      const routeError = validateRoute(key);
+      if (routeError) {
+        throw new Error(routeError + ': ' + key);
       }
       const route = routes[key];
       if (Array.isArray(route)) {
@@ -23,6 +25,9 @@ export const createRequestHandler = (routes: { [key: string]: any }) => {
             throw new Error('All route handlers must be functions: ' + key);
           }
         }
+        myRoutes[key] = {
+          handler: route
+        };
       } else if (typeof route === 'object') {
         if (!route?.handler) {
           throw new Error('Route has no handlers: ' + key);
@@ -37,13 +42,18 @@ export const createRequestHandler = (routes: { [key: string]: any }) => {
             }
           }
         }
+        myRoutes[key] = { ...route };
+      } else if (typeof route === 'function') {
+        myRoutes[key] = {
+          handler: [route]
+        };
       } else {
         throw new Error('Route is missing handler: ' + key);
       }
     }
 
     const handler = async (requests: any[], context: { [key: string]: any } = {}) => {
-      return handleRequest(routes, requests, context)
+      return handleRequest(myRoutes, requests, context)
     }
 
     return handler
@@ -189,7 +199,16 @@ const routeReducer = async (
       if (timer) {
         clearTimeout(timer);
       }
-      resolve([id, route, null, error]);
+      const responseError:any = {
+        message: error.message
+      };
+      if (error.code) {
+        responseError.code = error.code;
+      }
+      if (process.env.NODE_ENV !== 'production') {
+        responseError.stack = error.stack;
+      }
+      resolve([id, route, null, responseError]);
     }
   })
 };

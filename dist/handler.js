@@ -7,10 +7,12 @@ const createRequestHandler = (routes) => {
         throw new Error('A routes object is required');
     }
     const routeKeys = Object.keys(routes);
+    const myRoutes = {};
     for (let i = 0; i < routeKeys.length; i++) {
         const key = routeKeys[i];
-        if (!(0, utilities_1.validateRoute)(key)) {
-            throw new Error('Route is not valid: ' + key);
+        const routeError = (0, utilities_1.validateRoute)(key);
+        if (routeError) {
+            throw new Error(routeError + ': ' + key);
         }
         const route = routes[key];
         if (Array.isArray(route)) {
@@ -22,6 +24,9 @@ const createRequestHandler = (routes) => {
                     throw new Error('All route handlers must be functions: ' + key);
                 }
             }
+            myRoutes[key] = {
+                handler: route
+            };
         }
         else if (typeof route === 'object') {
             if (!(route === null || route === void 0 ? void 0 : route.handler)) {
@@ -39,13 +44,19 @@ const createRequestHandler = (routes) => {
                     }
                 }
             }
+            myRoutes[key] = { ...route };
+        }
+        else if (typeof route === 'function') {
+            myRoutes[key] = {
+                handler: [route]
+            };
         }
         else {
             throw new Error('Route is missing handler: ' + key);
         }
     }
     const handler = async (requests, context = {}) => {
-        return (0, exports.handleRequest)(routes, requests, context);
+        return (0, exports.handleRequest)(myRoutes, requests, context);
     };
     return handler;
 };
@@ -158,7 +169,16 @@ const routeReducer = async (handler, request, context, timeout) => {
             if (timer) {
                 clearTimeout(timer);
             }
-            resolve([id, route, null, error]);
+            const responseError = {
+                message: error.message
+            };
+            if (error.code) {
+                responseError.code = error.code;
+            }
+            if (process.env.NODE_ENV !== 'production') {
+                responseError.stack = error.stack;
+            }
+            resolve([id, route, null, responseError]);
         }
     });
 };

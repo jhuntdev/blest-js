@@ -1,6 +1,24 @@
 import * as http from 'http';
 
-export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any?, Error?]>, options?: any): http.Server => {
+interface ServerOptions {
+  url?: string,
+  cors?: string | boolean,
+  accessControlAllowOrigin?: string
+  contentSecurityPolicy?: string
+  crossOriginOpenerPolicy?: string
+  crossOriginResourcePolicy?: string
+  originAgentCluster?: string
+  referrerPolicy?: string
+  strictTransportSecurity?: string
+  xContentTypeOptions?: string
+  xDnsPrefetchOptions?: string
+  xDownloadOptions?: string
+  xFrameOptions?: string
+  xPermittedCrossDomainPolicies?: string
+  xXssProtection?: string
+}
+
+export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any?, Error?]>, options?: ServerOptions): http.Server => {
   
   if (options) {
     const optionsError = validateServerOptions(options);
@@ -10,6 +28,22 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
   }
 
   const url = options?.url || '/';
+
+  const httpHeaders:any = {
+    'access-control-allow-origin': options?.accessControlAllowOrigin || (options?.cors ? typeof options.cors === 'string' ? options.cors : '*' : false),
+    'content-security-policy': options?.contentSecurityPolicy || "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+    'cross-origin-opener-policy': options?.crossOriginOpenerPolicy || 'same-origin',
+    'cross-origin-resource-policy': options?.crossOriginResourcePolicy || 'same-origin',
+    'origin-agent-cluster': options?.originAgentCluster || '?1',
+    'referrer-policy': options?.referrerPolicy || 'no-referrer',
+    'strict-transport-security': options?.strictTransportSecurity || 'max-age=15552000; includeSubDomains',
+    'x-content-type-options': options?.xContentTypeOptions || 'nosniff',
+    'x-dns-prefetch-control': options?.xDnsPrefetchOptions || 'off',
+    'x-download-options': options?.xDownloadOptions || 'noopen',
+    'x-frame-options': options?.xFrameOptions || 'SAMEORIGIN',
+    'x-permitted-cross-domain-policies': options?.xPermittedCrossDomainPolicies || 'none',
+    'x-xss-protection': options?.xXssProtection || '0'
+  };
 
   const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     if (req.url === url) {
@@ -23,8 +57,7 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
           try {
             jsonData = JSON.parse(body);
           } catch (error: any) {
-            // console.error(error);
-            res.statusCode = 400;
+            res.writeHead(400, httpHeaders);
             res.end(error.message);
             return;
           }
@@ -34,27 +67,26 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
             };
             const [result, error] = await requestHandler(jsonData, context);
             if (error) {
-              res.statusCode = 500;
+              res.writeHead(500, httpHeaders);
               res.end(error.message);
             } else if (result) {
-              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.writeHead(200, { 'Content-Type': 'application/json', ...httpHeaders });
               res.end(JSON.stringify(result));
             } else {
-              res.statusCode = 204;
+              res.writeHead(204, httpHeaders);
               res.end();
             }
           } catch (error: any) {
-            // console.error(error);
-            res.statusCode = 500;
+            res.writeHead(500, httpHeaders);
             res.end(error.message);
           }
         });
       } else {
-        res.statusCode = 405;
+        res.writeHead(405, httpHeaders);
         res.end();
       }
     } else {
-      res.statusCode = 404;
+      res.writeHead(404, httpHeaders);
       res.end();
     }
   });
@@ -76,16 +108,9 @@ const validateServerOptions = (options: any) => {
         return 'URL should begin with a forward slash';
       }
     }
-    if (options.port) {
-      if (typeof options.port !== 'number') {
-        return 'Port should be a number';
-      } else if (options.port < 1024) {
-        return 'Port should be greater than 1024';
-      }
-    }
-    if (options.hostname) {
-      if (typeof options.hostname !== 'string') {
-        return 'Hostname should be a string';
+    if (options.cors) {
+      if (['string', 'boolean'].indexOf(typeof options.cors) === -1) {
+        return 'CORS should be a string or boolean';
       }
     }
   }

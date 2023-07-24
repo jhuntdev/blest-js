@@ -7,9 +7,11 @@ const server_1 = require("./server");
 class Router {
     constructor(options) {
         this.introspection = false;
-        this.middleware = [];
+        this.beforeMiddleware = [];
+        this.afterMiddleware = [];
         this.timeout = 0;
         this.routes = {};
+        this.use = this.before;
         if (options === null || options === void 0 ? void 0 : options.introspection) {
             if (typeof options.introspection !== 'boolean') {
                 throw new Error('Introspection should be a boolean');
@@ -23,12 +25,24 @@ class Router {
             this.timeout = options.timeout;
         }
     }
-    use(...handlers) {
+    before(...handlers) {
         for (let i = 0; i < handlers.length; i++) {
             if (typeof handlers[i] !== 'function') {
                 throw new Error('All arguments should be functions');
             }
-            this.middleware.push(handlers[i]);
+            this.beforeMiddleware.push(handlers[i]);
+            const routeNames = Object.keys(this.routes);
+            for (let j = 0; j < routeNames.length; j++) {
+                this.routes[routeNames[j]].handler.push(handlers[i]);
+            }
+        }
+    }
+    after(...handlers) {
+        for (let i = 0; i < handlers.length; i++) {
+            if (typeof handlers[i] !== 'function') {
+                throw new Error('All arguments should be functions');
+            }
+            this.afterMiddleware.push(handlers[i]);
             const routeNames = Object.keys(this.routes);
             for (let j = 0; j < routeNames.length; j++) {
                 this.routes[routeNames[j]].handler.push(handlers[i]);
@@ -60,7 +74,7 @@ class Router {
             }
         }
         this.routes[route] = {
-            handler: [...this.middleware, ...handlers],
+            handler: [...this.beforeMiddleware, ...handlers, ...this.afterMiddleware],
             description: null,
             parameters: null,
             result: null,
@@ -79,20 +93,20 @@ class Router {
         else if (typeof config !== 'object') {
             throw new Error('Configuration should be an object');
         }
-        if (config.description) {
-            if (typeof config.description !== 'string') {
+        if (config.description !== undefined) {
+            if (config.description && typeof config.description !== 'string') {
                 throw new Error('Description should be a string');
             }
             this.routes[route].description = config.description;
         }
-        if (config.parameters) {
-            if (typeof config.parameters !== 'object') {
+        if (config.parameters !== undefined) {
+            if (config.parameters && typeof config.parameters !== 'object') {
                 throw new Error('Parameters should be a JSON schema');
             }
             this.routes[route].parameters = config.parameters;
         }
-        if (config.result) {
-            if (typeof config.result !== 'object') {
+        if (config.result !== undefined) {
+            if (config.result && typeof config.result !== 'object') {
                 throw new Error('Result should be a JSON schema');
             }
             this.routes[route].result = config.result;
@@ -136,7 +150,7 @@ class Router {
             else {
                 this.routes[route] = {
                     ...router.routes[route],
-                    handler: [...this.middleware, ...router.routes[route].handler],
+                    handler: [...this.beforeMiddleware, ...router.routes[route].handler, ...this.afterMiddleware],
                     timeout: router.routes[route].timeout || this.timeout
                 };
             }
@@ -164,7 +178,7 @@ class Router {
             else {
                 this.routes[nsRoute] = {
                     ...router.routes[route],
-                    handler: [...this.middleware, ...router.routes[route].handler],
+                    handler: [...this.beforeMiddleware, ...router.routes[route].handler, ...this.afterMiddleware],
                     timeout: router.routes[route].timeout || this.timeout
                 };
             }
