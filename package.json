@@ -1,6 +1,6 @@
 {
   "name": "blest-js",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST.",
   "keywords": [
     "blest",

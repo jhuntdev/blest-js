@@ -128,41 +128,44 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
 type RequestResult = [any, any];
 
 const handleResult = (result: any): RequestResult => {
-    return [result, null];
+  return [result, null];
 };
 
 const handleError = (code: number, message: string): RequestResult => {
-    return [null, { code, message }];
+  return [null, { code, message }];
 };
 
 const routeNotFound = (): never => {
-    throw new Error('Route not found');
+  throw { message: 'Not Found', status: 404 };
 };
 
 interface RequestObject {
-    id: string;
-    route: string;
-    parameters: any;
-    selector: any;
+  id: string;
+  route: string;
+  parameters: any;
+  selector: any;
 }
 
 interface RequestContext {
-    [key: string]: any;
+  [key: string]: any;
 }
 
 const routeReducer = async (
-    handler: ((parameters: any, context: RequestContext) => Promise<any>) | ((parameters: any, context: RequestContext) => any)[],
-    request: RequestObject,
-    context?: RequestContext,
-    timeout?: number
-): Promise<[string, string, any | null, { message: string } | null]> => {
-  return new Promise(async (resolve) => {
+  handler: ((parameters: any, context: RequestContext) => Promise<any>) | ((parameters: any, context: RequestContext) => any)[],
+  request: RequestObject,
+  context?: RequestContext,
+  timeout?: number
+): Promise<[string, string, any | null, { message: string, status?: number, code?: string, stack?: string } | null]> => {
+  return new Promise(async (resolve, reject) => {
     let timer;
+    let timedOut = false;
     const { id, route, parameters, selector } = request;
     try {
       if (timeout && timeout > 0) {
         timer = setTimeout(() => {
-          resolve([id, route, null, { message: 'Request timed out' }]);
+          timedOut = true;
+          console.error(`The route "${route}" timed out after ${timeout} milliseconds`);
+          resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
         }, timeout);
       }
       const safeContext = context ? cloneDeep(context) : {};
@@ -172,7 +175,8 @@ const routeReducer = async (
           const tempResult = await handler[i](parameters, safeContext);
           if (tempResult) {
             if (result) {
-              throw new Error('Middleware should not return anything but may mutate context');
+              console.error(`Multiple handlers on the route "${route}" returned results`);
+              return resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
             } else {
               result = tempResult;
             }
@@ -181,8 +185,12 @@ const routeReducer = async (
       } else {
         result = await handler(parameters, safeContext);
       }
+      if (timedOut) {
+        return reject();
+      }
       if (result && (typeof result !== 'object' || Array.isArray(result))) {
-        throw new Error('The result, if any, should be a JSON object');
+        console.error(`The route "${route}" did not return a result object`);
+        return resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
       }
       if (result && selector) {
         result = filterObject(result, selector);
@@ -196,12 +204,13 @@ const routeReducer = async (
         clearTimeout(timer);
       }
       const responseError:any = {
-        message: error.message
+        message: error.message || 'Internal Server Error',
+        status: error.status || 500
       };
       if (error.code) {
         responseError.code = error.code;
       }
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV !== 'production' && error.stack) {
         responseError.stack = error.stack;
       }
       resolve([id, route, null, responseError]);

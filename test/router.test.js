@@ -51,7 +51,9 @@ describe('Router', async () => {
         const router3 = new Router();
 
         router3.route('errorRoute', (parameters) => {
-            throw new Error(parameters.testValue);
+            const error = new Error(parameters.testValue);
+            error.code = 'ERROR_' + Math.round(parameters.testValue * 10);
+            throw error;
         });
 
         router.namespace('subRoutes', router3);
@@ -142,12 +144,16 @@ describe('Router', async () => {
         expect(result1[0][3]).to.be.null;
         expect(result2[0][3]).to.be.null;
         expect(Number(result3[0][3].message)).to.equal(testValue3);
-        expect(result4[0][3].message).to.equal('Route not found');
+        expect(Number(result3[0][3].status)).to.equal(500);
+        expect(result3[0][3].code).to.equal('ERROR_' + Math.round(testValue3 * 10));
+        expect(result4[0][3].message).to.equal('Not Found');
+        expect(result4[0][3].status).to.equal(404);
     });
 
     it('should support timeout setting', () => {
         expect(result5[0][2]).to.be.null;
-        expect(result5[0][3].message).to.equal('Request timed out');
+        expect(result5[0][3].message).to.equal('Internal Server Error');
+        expect(result5[0][3].status).to.equal(500);
     });
 
     it('should reject malformed requests', () => {

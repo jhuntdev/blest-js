@@ -120,16 +120,19 @@ const handleError = (code, message) => {
     return [null, { code, message }];
 };
 const routeNotFound = () => {
-    throw new Error('Route not found');
+    throw { message: 'Not Found', status: 404 };
 };
 const routeReducer = async (handler, request, context, timeout) => {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
         let timer;
+        let timedOut = false;
         const { id, route, parameters, selector } = request;
         try {
             if (timeout && timeout > 0) {
                 timer = setTimeout(() => {
-                    resolve([id, route, null, { message: 'Request timed out' }]);
+                    timedOut = true;
+                    console.error(`The route "${route}" timed out after ${timeout} milliseconds`);
+                    resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
                 }, timeout);
             }
             const safeContext = context ? (0, utilities_1.cloneDeep)(context) : {};
@@ -139,7 +142,8 @@ const routeReducer = async (handler, request, context, timeout) => {
                     const tempResult = await handler[i](parameters, safeContext);
                     if (tempResult) {
                         if (result) {
-                            throw new Error('Middleware should not return anything but may mutate context');
+                            console.error(`Multiple handlers on the route "${route}" returned results`);
+                            return resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
                         }
                         else {
                             result = tempResult;
@@ -150,8 +154,12 @@ const routeReducer = async (handler, request, context, timeout) => {
             else {
                 result = await handler(parameters, safeContext);
             }
+            if (timedOut) {
+                return reject();
+            }
             if (result && (typeof result !== 'object' || Array.isArray(result))) {
-                throw new Error('The result, if any, should be a JSON object');
+                console.error(`The route "${route}" did not return a result object`);
+                return resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
             }
             if (result && selector) {
                 result = (0, utilities_1.filterObject)(result, selector);
@@ -166,12 +174,13 @@ const routeReducer = async (handler, request, context, timeout) => {
                 clearTimeout(timer);
             }
             const responseError = {
-                message: error.message
+                message: error.message || 'Internal Server Error',
+                status: error.status || 500
             };
             if (error.code) {
                 responseError.code = error.code;
             }
-            if (process.env.NODE_ENV !== 'production') {
+            if (process.env.NODE_ENV !== 'production' && error.stack) {
                 responseError.stack = error.stack;
             }
             resolve([id, route, null, responseError]);
