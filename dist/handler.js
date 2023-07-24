@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRequest = exports.createRequestHandler = void 0;
-const uuid_1 = require("uuid");
 const utilities_1 = require("./utilities");
 const createRequestHandler = (routes) => {
     if (!routes || typeof routes !== 'object') {
@@ -58,7 +57,6 @@ const handleRequest = async (routes, requests, context = {}) => {
     else if (!requests || typeof requests !== 'object' || !Array.isArray(requests)) {
         return handleError(400, 'Request body should be a JSON array');
     }
-    const batchId = (0, uuid_1.v4)();
     const uniqueIds = [];
     const promises = [];
     for (let i = 0; i < requests.length; i++) {
@@ -88,7 +86,6 @@ const handleRequest = async (routes, requests, context = {}) => {
             return handleError(400, 'Request items should have unique IDs');
         uniqueIds.push(id);
         const thisRoute = routes[route];
-        const routeLogger = thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.logger;
         const routeHandler = (thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.handler) || thisRoute || routeNotFound;
         const requestObject = {
             id,
@@ -99,14 +96,11 @@ const handleRequest = async (routes, requests, context = {}) => {
         const myContext = {
             requestId: id,
             routeName: route,
+            selector: requestObject.selector,
+            requestTime: Date.now(),
             ...context
         };
-        if (routeLogger) {
-            promises.push(applyLogger(routeReducer(routeHandler, requestObject, myContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout), routeLogger, requestObject, requests.length, batchId));
-        }
-        else {
-            promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
-        }
+        promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
     }
     const results = await Promise.all(promises);
     return handleResult(results);
@@ -120,27 +114,6 @@ const handleError = (code, message) => {
 };
 const routeNotFound = () => {
     throw new Error('Route not found');
-};
-const applyLogger = async (responsePromise, logger, requestObject, batchSize, batchId) => {
-    const startTime = Date.now();
-    const response = await responsePromise;
-    const endTime = Date.now();
-    if (typeof logger !== 'function') {
-        throw new Error('Logger should be a function');
-    }
-    logger({
-        requestId: requestObject.id,
-        routeName: requestObject.route,
-        parameters: requestObject.parameters,
-        selector: requestObject.selector,
-        result: response[2],
-        error: response[3],
-        startTime,
-        endTime,
-        batchSize,
-        batchId
-    });
-    return response;
 };
 const routeReducer = async (handler, request, context, timeout) => {
     return new Promise(async (resolve) => {

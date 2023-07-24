@@ -2,7 +2,6 @@ export declare class Router {
     private introspection;
     private middleware;
     private timeout;
-    private logger;
     routes: any;
     constructor(options: any);
     use(...handlers: any[]): void;

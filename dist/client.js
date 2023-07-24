@@ -3,13 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHttpClient = exports.HTTPClient = void 0;
+exports.createHttpClient = void 0;
 const http_1 = __importDefault(require("http"));
 const events_1 = __importDefault(require("events"));
 const uuid_1 = require("uuid");
-class HTTPClient {
-}
-exports.HTTPClient = HTTPClient;
 const createHttpClient = (url, options) => {
     if (options) {
         console.warn('The "options" argument is not yet used, but may be used in the future.');

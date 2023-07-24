@@ -38,17 +38,16 @@
   -------------------------------------------------------------------------------------------------
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHttpClient = exports.HTTPClient = exports.createHttpServer = exports.HTTPServer = exports.Router = void 0;
+exports.createRequestHandler = exports.createHttpClient = exports.createHttpServer = exports.Router = void 0;
 const router_1 = require("./router");
 var router_2 = require("./router");
 Object.defineProperty(exports, "Router", { enumerable: true, get: function () { return router_2.Router; } });
 var server_1 = require("./server");
-Object.defineProperty(exports, "HTTPServer", { enumerable: true, get: function () { return server_1.HTTPServer; } });
 Object.defineProperty(exports, "createHttpServer", { enumerable: true, get: function () { return server_1.createHttpServer; } });
 var client_1 = require("./client");
-Object.defineProperty(exports, "HTTPClient", { enumerable: true, get: function () { return client_1.HTTPClient; } });
 Object.defineProperty(exports, "createHttpClient", { enumerable: true, get: function () { return client_1.createHttpClient; } });
-// export { createRequestHandler } from './handler';
+var handler_1 = require("./handler");
+Object.defineProperty(exports, "createRequestHandler", { enumerable: true, get: function () { return handler_1.createRequestHandler; } });
 exports.default = (config) => {
     return new router_1.Router(config);
 };

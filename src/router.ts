@@ -7,7 +7,6 @@ export class Router {
   private introspection: boolean = false;
   private middleware: any[] = [];
   private timeout: number = 0;
-  private logger: any;
 
   public routes: any = {};
 
@@ -23,12 +22,6 @@ export class Router {
         throw new Error('Timeout should be a positive integer');
       }
       this.timeout = options.timeout;
-    }
-    if (options?.logger) {
-      if (typeof options.logger !== 'function') {
-        throw new Error('Logger should be a function');
-      }
-      this.logger = options.logger;
     }
   }
 
@@ -77,8 +70,7 @@ export class Router {
       result: null,
       visible: this.introspection,
       validate: false,
-      timeout: this.timeout,
-      logger: this.logger
+      timeout: this.timeout
     };
 
     if (typeof lastArg !== 'function') {
@@ -139,13 +131,6 @@ export class Router {
       this.routes[route].timeout = config.timeout;
     }
 
-    if (config.logger) {
-      if (typeof config.logger !== 'function') {
-        throw new Error('Logger should be a function');
-      }
-      this.routes[route].logger = config.logger;
-    }
-
   }
 
   public merge(router: Router) {
@@ -169,8 +154,7 @@ export class Router {
         this.routes[route] = {
           ...router.routes[route],
           handler: [...this.middleware, ...router.routes[route].handler],
-          timeout: router.routes[route].timeout || this.timeout,
-          logger: router.routes[route].logger || this.logger
+          timeout: router.routes[route].timeout || this.timeout
         };
       }
     }
@@ -192,17 +176,19 @@ export class Router {
     const existingRoutes = Object.keys(this.routes);
     
     if (!newRoutes.length) {
-      throw new Error('No routes to merge');
+      throw new Error('No routes to namespace');
     }
 
     for (let i = 0; i < newRoutes.length; i++) {
-      const route = `${prefix}/${newRoutes[i]}`;
+      const route = newRoutes[i];
+      const nsRoute = `${prefix}/${newRoutes[i]}`;
       if (existingRoutes.indexOf(route) > -1) {
-        throw new Error('Cannot merge duplicate routes: ' + route);
+        throw new Error('Cannot merge duplicate routes: ' + nsRoute);
       } else {
-        this.routes[route] = {
+        this.routes[nsRoute] = {
           ...router.routes[route],
-          handler: [...this.middleware, ...router.routes[route].handler]
+          handler: [...this.middleware, ...router.routes[route].handler],
+          timeout: router.routes[route].timeout || this.timeout
         };
       }
     }

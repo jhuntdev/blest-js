@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { validateRoute, cloneDeep, filterObject } from './utilities';
 
 export const createRequestHandler = (routes: { [key: string]: any }) => {
@@ -59,7 +58,6 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     return handleError(400, 'Request body should be a JSON array');
   }
 
-  const batchId = uuidv4();
   const uniqueIds: string[] = [];
   const promises: Promise<any>[] = [];
 
@@ -94,7 +92,6 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     uniqueIds.push(id);
 
     const thisRoute = routes[route];
-    const routeLogger = thisRoute?.logger;
     const routeHandler = thisRoute?.handler || thisRoute || routeNotFound;
 
     const requestObject = {
@@ -107,14 +104,13 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     const myContext = {
       requestId: id,
       routeName: route,
+      selector: requestObject.selector,
+      requestTime: Date.now(),
       ...context
-    }
+    };
 
-    if (routeLogger) {
-      promises.push(applyLogger(routeReducer(routeHandler, requestObject, myContext, thisRoute?.timeout), routeLogger, requestObject, requests.length, batchId));
-    } else {
-      promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute?.timeout)); 
-    }
+    promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute?.timeout)); 
+    
   }
 
   const results = await Promise.all(promises);
@@ -146,28 +142,6 @@ interface RequestObject {
 
 interface RequestContext {
     [key: string]: any;
-}
-
-const applyLogger = async (responsePromise: Promise<any[]>, logger: any, requestObject: RequestObject, batchSize: number, batchId: string) => {
-  const startTime = Date.now();
-  const response = await responsePromise;
-  const endTime = Date.now();
-  if (typeof logger !== 'function') {
-    throw new Error('Logger should be a function');
-  }
-  logger({
-    requestId: requestObject.id,
-    routeName: requestObject.route,
-    parameters: requestObject.parameters,
-    selector: requestObject.selector,
-    result: response[2],
-    error: response[3],
-    startTime,
-    endTime,
-    batchSize,
-    batchId
-  })
-  return response
 }
 
 const routeReducer = async (

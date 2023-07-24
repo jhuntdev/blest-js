@@ -23,18 +23,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHttpServer = exports.HTTPServer = void 0;
+exports.createHttpServer = void 0;
 const http = __importStar(require("http"));
-class HTTPServer {
-    constructor(requestHandler) {
-        if (!requestHandler) {
-            throw new Error('Missing request handler');
-        }
-        this.server = (0, exports.createHttpServer)(requestHandler);
-        this.listen = this.server.listen;
-    }
-}
-exports.HTTPServer = HTTPServer;
 const createHttpServer = (requestHandler, options) => {
     if (options) {
         const optionsError = validateServerOptions(options);
