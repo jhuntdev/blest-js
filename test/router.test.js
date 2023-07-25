@@ -99,7 +99,6 @@ describe('Router', async () => {
         expect(router instanceof Router).to.be.true;
         expect(Object.keys(router.routes).length).to.equal(4);
         expect(typeof router.handle).to.equal('function');
-        expect(typeof router.listen).to.equal('function');
     });
 
     it('should process all valid requests', () => {

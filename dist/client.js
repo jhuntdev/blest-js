@@ -9,9 +9,14 @@ const events_1 = __importDefault(require("events"));
 const uuid_1 = require("uuid");
 const createHttpClient = (url, options) => {
     if (options) {
-        console.warn('The "options" argument is not yet used, but may be used in the future.');
+        const optionsError = validateClientOptions(options);
+        if (optionsError) {
+            throw new Error(optionsError);
+        }
     }
-    const maxBatchSize = 100;
+    const headers = (options === null || options === void 0 ? void 0 : options.headers) || null;
+    const maxBatchSize = (options === null || options === void 0 ? void 0 : options.maxBatchSize) || 100;
+    const bufferDelay = (options === null || options === void 0 ? void 0 : options.bufferDelay) || 10;
     let queue = [];
     let timeout = null;
     const emitter = new events_1.default.EventEmitter();
@@ -24,9 +29,9 @@ const createHttpClient = (url, options) => {
         else {
             timeout = setTimeout(() => {
                 process();
-            }, 1);
+            }, bufferDelay);
         }
-        httpPostRequest(url, newQueue)
+        httpPostRequest(url, newQueue, headers)
             .then(async (data) => {
             data.forEach((r) => {
                 emitter.emit(r[0], r[2], r[3]);
@@ -69,12 +74,13 @@ const createHttpClient = (url, options) => {
     return request;
 };
 exports.createHttpClient = createHttpClient;
-function httpPostRequest(url, data) {
+function httpPostRequest(url, data, headers = {}) {
     return new Promise((resolve, reject) => {
         const requestData = JSON.stringify(data);
         const options = {
             method: 'POST',
             headers: {
+                ...headers,
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(requestData)
             }
@@ -101,3 +107,41 @@ function httpPostRequest(url, data) {
         request.end();
     });
 }
+const validateClientOptions = (options) => {
+    if (!options) {
+        return false;
+    }
+    else if (typeof options !== 'object') {
+        return 'Options should be an object';
+    }
+    else {
+        if (options.headers) {
+            if (typeof options.headers !== 'object') {
+                return '"headers" option should be an object';
+            }
+        }
+        if (options.maxBatchSize) {
+            if (typeof options.maxBatchSize !== 'number') {
+                return '"maxBatchSize" option should be a number';
+            }
+            else if (options.maxBatchSize < 1) {
+                return '"maxBatchSize" option should be greater than or equal to one';
+            }
+            else if (options.maxBatchSize > 20) {
+                !options.disableWarnings && console.warn('"Batching more than 20 requests is not recommended');
+            }
+        }
+        if (options.bufferDelay) {
+            if (typeof options.bufferDelay !== 'number') {
+                return '"bufferDelay" option should be a number';
+            }
+            else if (options.bufferDelay < 0) {
+                return '"bufferDelay" option should be greater than or equal to zero';
+            }
+            else if (options.bufferDelay > 1000) {
+                !options.disableWarnings && console.warn('"Buffering for longer than 1000 milliseconds is not recommended');
+            }
+        }
+    }
+    return false;
+};

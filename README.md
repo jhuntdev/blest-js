@@ -38,6 +38,8 @@ const blest = require('blest-js');
 
 const app = blest({
   timeout: 1000
+}, {
+  cors: 'http://localhost:3000'
 });
 const port = 8080;
 

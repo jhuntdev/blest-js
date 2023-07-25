@@ -1,3 +1,8 @@
+export interface RouterOptions {
+    introspection?: boolean;
+    timeout?: number;
+    disableWarnings?: boolean;
+}
 export declare class Router {
     private introspection;
     private middleware;
@@ -13,5 +18,4 @@ export declare class Router {
     handle(requests: any[], context?: {
         [key: string]: any;
     }): Promise<[any, any]>;
-    listen(...args: any[]): void;
 }

@@ -2,12 +2,25 @@ import http from 'http';
 import events from 'events';
 import { v4 as uuidv4 } from 'uuid';
 
-export const createHttpClient = (url: string, options?: any) => {
+export interface ClientOptions {
+    headers?: any
+    maxBatchSize?: number
+    bufferDelay?: number
+    disableWarnings?: boolean
+}
+
+export const createHttpClient = (url: string, options?: ClientOptions) => {
+    
     if (options) {
-        console.warn('The "options" argument is not yet used, but may be used in the future.');
+        const optionsError = validateClientOptions(options);
+        if (optionsError) {
+            throw new Error(optionsError);
+        }
     }
 
-    const maxBatchSize = 100;
+    const headers = options?.headers || null;
+    const maxBatchSize = options?.maxBatchSize || 100;
+    const bufferDelay = options?.bufferDelay || 10;
     let queue: any[] = [];
     let timeout: NodeJS.Timeout | null = null;
     const emitter = new events.EventEmitter();
@@ -16,64 +29,65 @@ export const createHttpClient = (url: string, options?: any) => {
         const newQueue = queue.splice(0, maxBatchSize);
         clearTimeout(timeout!);
         if (!queue.length) {
-        timeout = null;
+            timeout = null;
         } else {
-        timeout = setTimeout(() => {
-            process();
-        }, 1);
+            timeout = setTimeout(() => {
+                process();
+            }, bufferDelay);
         }
         
-        httpPostRequest(url, newQueue)
+        httpPostRequest(url, newQueue, headers)
         .then(async (data: any) => {
-        data.forEach((r: any) => {
-            emitter.emit(r[0], r[2], r[3]);
-        });
+            data.forEach((r: any) => {
+                emitter.emit(r[0], r[2], r[3]);
+            });
         })
         .catch((error: any) => {
-        newQueue.forEach((q) => {
-            emitter.emit(q[0], null, error);
-        });
+            newQueue.forEach((q) => {
+                emitter.emit(q[0], null, error);
+            });
         });
     };
 
     const request = (route: string, params: object | null, selector: any[] | null) => {
         return new Promise((resolve, reject) => {
-        if (!route) {
-            return reject(new Error('Route is required'));
-        } else if (params && typeof params !== 'object') {
-            return reject(new Error('Params should be an object'));
-        } else if (selector && !Array.isArray(selector)) {
-            return reject(new Error('Selector should be an array'));
-        }
-        const id = uuidv4();
-        emitter.once(id, (result: any, error: any) => {
-            if (error) {
-            reject(error);
-            } else {
-            resolve(result);
+            if (!route) {
+                return reject(new Error('Route is required'));
+            } else if (params && typeof params !== 'object') {
+                return reject(new Error('Params should be an object'));
+            } else if (selector && !Array.isArray(selector)) {
+                return reject(new Error('Selector should be an array'));
             }
-        });
-        queue.push([id, route, params || null, selector || null]);
-        if (!timeout) {
-            timeout = setTimeout(() => {
-            process();
-            }, 1);
-        }
+            const id = uuidv4();
+            emitter.once(id, (result: any, error: any) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+            queue.push([id, route, params || null, selector || null]);
+            if (!timeout) {
+                timeout = setTimeout(() => {
+                    process();
+                }, 1);
+            }
         });
     };
 
     return request;
 };
 
-function httpPostRequest(url: string, data: any): Promise<any> {
+function httpPostRequest(url: string, data: any, headers: any = {}): Promise<any> {
     return new Promise((resolve, reject) => {
         const requestData = JSON.stringify(data);
         
         const options: http.RequestOptions = {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(requestData)
+                ...headers,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestData)
             }
         };
         
@@ -101,4 +115,37 @@ function httpPostRequest(url: string, data: any): Promise<any> {
         request.write(requestData);
         request.end();
     });
+}
+
+const validateClientOptions = (options: ClientOptions) => {
+    if (!options) {
+        return false;
+    } else if (typeof options !== 'object') {
+        return 'Options should be an object';
+    } else {
+        if (options.headers) {
+            if (typeof options.headers !== 'object') {
+                return '"headers" option should be an object';
+            }
+        }
+        if (options.maxBatchSize) {
+            if (typeof options.maxBatchSize !== 'number') {
+                return '"maxBatchSize" option should be a number';
+            } else if (options.maxBatchSize < 1) {
+                return '"maxBatchSize" option should be greater than or equal to one';
+            } else if (options.maxBatchSize > 20) {
+                !options.disableWarnings && console.warn('"Batching more than 20 requests is not recommended');
+            }
+        }
+        if (options.bufferDelay) {
+            if (typeof options.bufferDelay !== 'number') {
+                return '"bufferDelay" option should be a number';
+            } else if (options.bufferDelay < 0) {
+                return '"bufferDelay" option should be greater than or equal to zero';
+            } else if (options.bufferDelay > 1000) {
+                !options.disableWarnings && console.warn('"Buffering for longer than 1000 milliseconds is not recommended');
+            }
+        }
+    }
+    return false;
 }

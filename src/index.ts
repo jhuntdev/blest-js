@@ -37,12 +37,43 @@
   -------------------------------------------------------------------------------------------------
 */
 
-import { Router } from './router';
-export { Router } from './router';
-export { createHttpServer } from './server';
+import { Router, RouterOptions } from './router';
+import { createRequestHandler, handleRequest } from './handler';
+import { createHttpServer, ServerOptions } from './server';
+import { createHttpClient } from './client';
+
+export { Router, RouterOptions } from './router';
+export { createHttpServer, ServerOptions } from './server';
 export { createHttpClient } from './client';
 export { createRequestHandler } from './handler';
 
-export default (config: any) => {
-  return new Router(config);
+class BlestApp extends Router {
+
+  options: any;
+
+  constructor(routerOptions?: RouterOptions, serverOptions?: ServerOptions) {
+    super(routerOptions);
+    this.options = serverOptions;
+  }
+
+  public listen(...args: any[]) {
+    const routes = this.routes;
+    const options = this.options;
+    const server = createHttpServer(handleRequest.bind(null, routes), options);
+    server.listen(...args);
+  }
+
 }
+
+const defaultExport = (routerOptions?: RouterOptions, serverOptions?: ServerOptions) => {
+  return new BlestApp(routerOptions, serverOptions);
+};
+
+defaultExport.Router = Router;
+defaultExport.createHttpServer = createHttpServer;
+defaultExport.createHttpClient = createHttpClient;
+defaultExport.createRequestHandler = createRequestHandler;
+
+module.exports = defaultExport
+
+export default defaultExport

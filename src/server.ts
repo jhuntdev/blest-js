@@ -1,8 +1,8 @@
 import * as http from 'http';
 
-interface ServerOptions {
-  url?: string,
-  cors?: string | boolean,
+export interface ServerOptions {
+  url?: string
+  cors?: string | boolean
   accessControlAllowOrigin?: string
   contentSecurityPolicy?: string
   crossOriginOpenerPolicy?: string
@@ -16,6 +16,7 @@ interface ServerOptions {
   xFrameOptions?: string
   xPermittedCrossDomainPolicies?: string
   xXssProtection?: string
+  disableWarnings?: boolean
 }
 
 export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any, any]>, options?: ServerOptions): http.Server => {
@@ -30,7 +31,7 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
   const url = options?.url || '/';
 
   const httpHeaders:any = {
-    'access-control-allow-origin': options?.accessControlAllowOrigin || (options?.cors ? typeof options.cors === 'string' ? options.cors : '*' : false),
+    'access-control-allow-origin': options?.accessControlAllowOrigin || (options?.cors ? typeof options.cors === 'string' ? options.cors : '*' : ''),
     'content-security-policy': options?.contentSecurityPolicy || "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
     'cross-origin-opener-policy': options?.crossOriginOpenerPolicy || 'same-origin',
     'cross-origin-resource-policy': options?.crossOriginResourcePolicy || 'same-origin',
@@ -97,7 +98,7 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
 
 }
 
-const validateServerOptions = (options: any) => {
+export const validateServerOptions = (options: any) => {
   if (!options) {
     return false;
   } else if (typeof options !== 'object') {

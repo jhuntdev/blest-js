@@ -23,18 +23,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHttpServer = void 0;
+exports.validateServerOptions = exports.createHttpServer = void 0;
 const http = __importStar(require("http"));
 const createHttpServer = (requestHandler, options) => {
     if (options) {
-        const optionsError = validateServerOptions(options);
+        const optionsError = (0, exports.validateServerOptions)(options);
         if (optionsError) {
             throw new Error(optionsError);
         }
     }
     const url = (options === null || options === void 0 ? void 0 : options.url) || '/';
     const httpHeaders = {
-        'access-control-allow-origin': (options === null || options === void 0 ? void 0 : options.accessControlAllowOrigin) || ((options === null || options === void 0 ? void 0 : options.cors) ? typeof options.cors === 'string' ? options.cors : '*' : false),
+        'access-control-allow-origin': (options === null || options === void 0 ? void 0 : options.accessControlAllowOrigin) || ((options === null || options === void 0 ? void 0 : options.cors) ? typeof options.cors === 'string' ? options.cors : '*' : ''),
         'content-security-policy': (options === null || options === void 0 ? void 0 : options.contentSecurityPolicy) || "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
         'cross-origin-opener-policy': (options === null || options === void 0 ? void 0 : options.crossOriginOpenerPolicy) || 'same-origin',
         'cross-origin-resource-policy': (options === null || options === void 0 ? void 0 : options.crossOriginResourcePolicy) || 'same-origin',
@@ -127,3 +127,4 @@ const validateServerOptions = (options) => {
     }
     return false;
 };
+exports.validateServerOptions = validateServerOptions;

@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Router = void 0;
 const utilities_1 = require("./utilities");
 const handler_1 = require("./handler");
-const server_1 = require("./server");
 class Router {
     constructor(options) {
         this.introspection = false;
@@ -172,11 +171,6 @@ class Router {
     }
     handle(requests, context = {}) {
         return (0, handler_1.handleRequest)(this.routes, requests, context);
-    }
-    listen(...args) {
-        const routes = this.routes;
-        const server = (0, server_1.createHttpServer)(handler_1.handleRequest.bind(null, routes));
-        server.listen(...args);
     }
 }
 exports.Router = Router;

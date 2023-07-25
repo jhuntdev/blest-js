@@ -1,6 +1,11 @@
 import { validateRoute } from './utilities';
 import { handleRequest } from './handler';
-import { createHttpServer } from './server';
+
+export interface RouterOptions {
+  introspection?: boolean
+  timeout?: number
+  disableWarnings?: boolean
+}
 
 export class Router {
 
@@ -197,12 +202,6 @@ export class Router {
 
   public handle(requests: any[], context: { [key: string]: any } = {}) {
     return handleRequest(this.routes, requests, context);
-  }
-
-  public listen(...args: any[]) {
-    const routes = this.routes;
-    const server = createHttpServer(handleRequest.bind(null, routes));
-    server.listen(...args);
   }
 
 }
