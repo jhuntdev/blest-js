@@ -33,37 +33,43 @@ yarn add blest-js
 This default export of this library is an API very similar to Express or Connect. For convenience it also provides a `createRequestHandler` function to create a request handler suitable for use in an existing application, a `createHttpServer` function to create a standalone HTTP server, and a `createHttpClient` function to create a BLEST HTTP client.
 
 ```javascript
-const express = require('express')
-const blest = require('blest-js')
+const express = require('express');
+const blest = require('blest-js');
 
 const app = blest({
   timeout: 1000
-})
-const port = 8080
+});
+const port = 8080;
 
 const authMiddleware = (params, context) => {
   if (params?.name) {
     context.user = {
       name: params.name
-    }
+    };
   } else {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
-}
+};
 
 const greetController = (params, context) => {
   return {
     greeting: `Hi, ${context.user?.name}!`
-  }
-}
+  };
+};
 
-app.use(authMiddleware)
+const errorHandler = (params, context, error) => {
+  console.log(error);
+};
 
-app.route('greet', greetController)
+app.use(errorHandler);
+
+app.use(authMiddleware);
+
+app.route('greet', greetController);
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`)
-})
+  console.log(`Server listening on port ${port}`);
+});
 ```
 
 ### createRequestHandler
@@ -71,106 +77,106 @@ app.listen(port, () => {
 This example uses Express, but you can find examples with other frameworks [here](examples).
 
 ```javascript
-const express = require('express')
-const { createRequestHandler } = require('blest-js')
+const express = require('express');
+const { createRequestHandler } = require('blest-js');
 
-const app = express()
-const port = 8080
+const app = express();
+const port = 8080;
 
 // Create some middleware (optional)
 const authMiddleware = (params, context) => {
   if (params?.name) {
     context.user = {
       name: params.name
-    }
+    };
   } else {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
-}
+};
 
 // Create a route controller
 const greetController = (params, context) => {
   return {
     greeting: `Hi, ${context.user?.name}!`
-  }
-}
+  };
+};
 
 // Create a request handler
 const requestHandler = createRequestHandler({
     greet: [authMiddleware, greetController]
-})
+});
 
 // Parse the JSON body
-app.use(express.json())
+app.use(express.json());
 
 // Use the request handler
 app.post('/', async (req, res, next) => {
   const [result, error] = await requestHandler(req.body, {
     headers: req.headers
-  })
+  });
   if (error) {
-    return next(error)
+    return next(error);
   } else {
-    res.json(result)
+    res.json(result);
   }
 });
 
 // Listen for requests
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`)
-})
+  console.log(`Server listening on port ${port}`);
+});
 ```
 
 ### createHttpServer
 
 ```javascript
-const { createHttpServer } = require('blest-js')
+const { createHttpServer } = require('blest-js');
 
-const port = 8080
+const port = 8080;
 
 // Create some middleware (optional)
 const authMiddleware = (params, context) => {
   if (params?.name) {
     context.user = {
       name: params.name
-    }
+    };
   } else {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
-}
+};
 
 // Create a route controller
 const greetController = (params, context) => {
   return {
     greeting: `Hi, ${context.user?.name}!`
-  }
-}
+  };
+};
 
 // Create a request handler
 const requestHandler = createRequestHandler({
     greet: [authMiddleware, greetController]
-})
+});
 
 // Create a server
-const server = createHttpServer(requestHandler)
+const server = createHttpServer(requestHandler);
 
 // Listen for requests
 server.listen(port, () => {
-  console.log(`Server listening on port ${port}`)
-})
+  console.log(`Server listening on port ${port}`);
+});
 ```
 
 ### createHttpClient
 
 ```javascript
-const { createHttpClient } = require('blest-js')
+const { createHttpClient } = require('blest-js');
 
 // Create a client
 const request = createHttpClient('http://localhost:8080', {
   headers: {
     'Authorization': 'Bearer token'
   }
-})
+});
 
 // Send a request
 request('greet', { name: 'Steve' }, ['greeting'])
@@ -179,7 +185,7 @@ request('greet', { name: 'Steve' }, ['greeting'])
 })
 .catch((error) => {
   // Do something in case of error
-})
+});
 ```
 
 ## License

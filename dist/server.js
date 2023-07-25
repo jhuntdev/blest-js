@@ -48,7 +48,7 @@ const createHttpServer = (requestHandler, options) => {
         'x-permitted-cross-domain-policies': (options === null || options === void 0 ? void 0 : options.xPermittedCrossDomainPolicies) || 'none',
         'x-xss-protection': (options === null || options === void 0 ? void 0 : options.xXssProtection) || '0'
     };
-    const server = http.createServer((req, res) => {
+    const httpRequestHandler = (req, res) => {
         if (req.url === url) {
             if (req.method === 'POST') {
                 let body = '';
@@ -71,7 +71,7 @@ const createHttpServer = (requestHandler, options) => {
                         };
                         const [result, error] = await requestHandler(jsonData, context);
                         if (error) {
-                            res.writeHead(500, httpHeaders);
+                            res.writeHead(error.status || 500, httpHeaders);
                             res.end(error.message);
                         }
                         else if (result) {
@@ -98,7 +98,8 @@ const createHttpServer = (requestHandler, options) => {
             res.writeHead(404, httpHeaders);
             res.end();
         }
-    });
+    };
+    const server = http.createServer(httpRequestHandler);
     return server;
 };
 exports.createHttpServer = createHttpServer;

@@ -18,7 +18,7 @@ interface ServerOptions {
   xXssProtection?: string
 }
 
-export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any?, Error?]>, options?: ServerOptions): http.Server => {
+export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any, any]>, options?: ServerOptions): http.Server => {
   
   if (options) {
     const optionsError = validateServerOptions(options);
@@ -45,7 +45,7 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
     'x-xss-protection': options?.xXssProtection || '0'
   };
 
-  const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+  const httpRequestHandler = (req: http.IncomingMessage, res: http.ServerResponse) => {
     if (req.url === url) {
       if (req.method === 'POST') {
         let body = '';
@@ -67,7 +67,7 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
             };
             const [result, error] = await requestHandler(jsonData, context);
             if (error) {
-              res.writeHead(500, httpHeaders);
+              res.writeHead(error.status || 500, httpHeaders);
               res.end(error.message);
             } else if (result) {
               res.writeHead(200, { 'Content-Type': 'application/json', ...httpHeaders });
@@ -89,7 +89,9 @@ export const createHttpServer = (requestHandler: (requests: any, context: any) =
       res.writeHead(404, httpHeaders);
       res.end();
     }
-  });
+  };
+
+  const server = http.createServer(httpRequestHandler);
 
   return server;
 

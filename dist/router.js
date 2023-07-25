@@ -7,11 +7,10 @@ const server_1 = require("./server");
 class Router {
     constructor(options) {
         this.introspection = false;
-        this.beforeMiddleware = [];
-        this.afterMiddleware = [];
+        this.middleware = [];
+        this.afterware = [];
         this.timeout = 0;
         this.routes = {};
-        this.use = this.before;
         if (options === null || options === void 0 ? void 0 : options.introspection) {
             if (typeof options.introspection !== 'boolean') {
                 throw new Error('Introspection should be a boolean');
@@ -25,27 +24,17 @@ class Router {
             this.timeout = options.timeout;
         }
     }
-    before(...handlers) {
+    use(...handlers) {
         for (let i = 0; i < handlers.length; i++) {
             if (typeof handlers[i] !== 'function') {
                 throw new Error('All arguments should be functions');
             }
-            this.beforeMiddleware.push(handlers[i]);
-            const routeNames = Object.keys(this.routes);
-            for (let j = 0; j < routeNames.length; j++) {
-                this.routes[routeNames[j]].handler.push(handlers[i]);
+            const argCount = handlers[i].length;
+            if (argCount <= 2) {
+                this.middleware.push(handlers[i]);
             }
-        }
-    }
-    after(...handlers) {
-        for (let i = 0; i < handlers.length; i++) {
-            if (typeof handlers[i] !== 'function') {
-                throw new Error('All arguments should be functions');
-            }
-            this.afterMiddleware.push(handlers[i]);
-            const routeNames = Object.keys(this.routes);
-            for (let j = 0; j < routeNames.length; j++) {
-                this.routes[routeNames[j]].handler.push(handlers[i]);
+            else if (argCount === 3) {
+                this.afterware.push(handlers[i]);
             }
         }
     }
@@ -74,7 +63,7 @@ class Router {
             }
         }
         this.routes[route] = {
-            handler: [...this.beforeMiddleware, ...handlers, ...this.afterMiddleware],
+            handler: [...this.middleware, ...handlers, ...this.afterware],
             description: null,
             parameters: null,
             result: null,
@@ -124,11 +113,8 @@ class Router {
             this.routes[route].validate = config.validate;
         }
         if (config.timeout !== undefined) {
-            if (typeof config.timeout !== 'number') {
-                throw new Error('Timeout should be a number');
-            }
-            else if (config.timeout < 0) {
-                throw new Error('Timeout should be greater than or equal to zero');
+            if (typeof config.timeout !== 'number' || !Number.isInteger(config.timeout) || config.timeout <= 0) {
+                throw new Error('Timeout should be a positive integer');
             }
             this.routes[route].timeout = config.timeout;
         }
@@ -150,7 +136,7 @@ class Router {
             else {
                 this.routes[route] = {
                     ...router.routes[route],
-                    handler: [...this.beforeMiddleware, ...router.routes[route].handler, ...this.afterMiddleware],
+                    handler: [...this.middleware, ...router.routes[route].handler, ...this.afterware],
                     timeout: router.routes[route].timeout || this.timeout
                 };
             }
@@ -178,7 +164,7 @@ class Router {
             else {
                 this.routes[nsRoute] = {
                     ...router.routes[route],
-                    handler: [...this.beforeMiddleware, ...router.routes[route].handler, ...this.afterMiddleware],
+                    handler: [...this.middleware, ...router.routes[route].handler, ...this.afterware],
                     timeout: router.routes[route].timeout || this.timeout
                 };
             }

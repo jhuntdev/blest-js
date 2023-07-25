@@ -16,5 +16,5 @@ interface ServerOptions {
     xPermittedCrossDomainPolicies?: string;
     xXssProtection?: string;
 }
-export declare const createHttpServer: (requestHandler: (requests: any, context: any) => Promise<[any?, Error?]>, options?: ServerOptions) => http.Server;
+export declare const createHttpServer: (requestHandler: (requests: any, context: any) => Promise<[any, any]>, options?: ServerOptions) => http.Server;
 export {};

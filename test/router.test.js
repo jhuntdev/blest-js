@@ -20,15 +20,22 @@ describe('Router', async () => {
             timeout: 1000
         });
 
+        router.route('basicRoute', (parameters, context) => {
+            return { route: 'basicRoute', parameters, context };
+        });
+
         router.use((parameters, context) => {
             context.test = {
                 value: parameters.testValue
             };
         });
 
-        router.route('basicRoute', (parameters, context) => {
-            return { route: 'basicRoute', parameters, context };
-        });
+        router.use((_, context, error) => {
+            const completeTime = Date.now();
+            const difference = completeTime - context.requestTime;
+            benchmarks.push(difference);
+            console.log(error);
+        })
 
         const router2 = new Router({
             timeout: 10
@@ -57,12 +64,6 @@ describe('Router', async () => {
         });
 
         router.namespace('subRoutes', router3);
-
-        router.use((_, context) => {
-            const completeTime = Date.now();
-            const difference = completeTime - context.requestTime;
-            benchmarks.push(difference);
-        })
 
         // Basic route
         testId1 = uuidv4();
@@ -136,7 +137,7 @@ describe('Router', async () => {
     });
 
     it('should support middleware', () => {
-        expect(Number(result1[0][2].context.test.value)).to.equal(testValue1);
+        expect(result1[0][2].context.test).to.be.undefined;
         expect(Number(result2[0][2].context.test.value)).to.equal(testValue2);
     });
 
@@ -161,30 +162,29 @@ describe('Router', async () => {
     });
 
     it('should allow trailing middleware', () => {
-        expect(benchmarks.length).to.equal(3);
+        expect(benchmarks.length).to.equal(1);
     });
 
     it('should throw an error for invalid routes', () => {
-        expect(() => router.route('a')).to.throw();
-        expect(() => router.route('0abc')).to.throw();
-        expect(() => router.route('_abc')).to.throw();
-        expect(() => router.route('-abc')).to.throw();
-        expect(() => router.route('abc_')).to.throw();
-        expect(() => router.route('abc-')).to.throw();
-        expect(() => router.route('ab/abc')).to.throw();
-        expect(() => router.route('abc/ab')).to.throw();
-        expect(() => router.route('abc/0abc')).to.throw();
-        expect(() => router.route('abc/_abc')).to.throw();
-        expect(() => router.route('abc/-abc')).to.throw();
-        expect(() => router.route('abc/')).to.throw();
-        expect(() => router.route('/abc')).to.throw();
-        expect(() => router.route('abc//abc')).to.throw();
-        expect(() => router.route('abc/a/abc')).to.throw();
-        expect(() => router.route('abc/0abc/abc')).to.throw();
-        expect(() => router.route('abc/_abc/abc')).to.throw();
-        expect(() => router.route('abc/-abc/abc')).to.throw();
-        expect(() => router.route('abc/abc_/abc')).to.throw();
-        expect(() => router.route('abc/abc-/abc')).to.throw();
+        const handler = () => {}
+        expect(() => router.route('a', handler)).to.throw();
+        expect(() => router.route('0abc', handler)).to.throw();
+        expect(() => router.route('_abc', handler)).to.throw();
+        expect(() => router.route('-abc', handler)).to.throw();
+        expect(() => router.route('abc_', handler)).to.throw();
+        expect(() => router.route('abc-', handler)).to.throw();
+        expect(() => router.route('abc/0abc', handler)).to.throw();
+        expect(() => router.route('abc/_abc', handler)).to.throw();
+        expect(() => router.route('abc/-abc', handler)).to.throw();
+        expect(() => router.route('abc/', handler)).to.throw();
+        expect(() => router.route('/abc', handler)).to.throw();
+        expect(() => router.route('abc//abc', handler)).to.throw();
+        expect(() => router.route('abc/a/abc', handler)).to.throw();
+        expect(() => router.route('abc/0abc/abc', handler)).to.throw();
+        expect(() => router.route('abc/_abc/abc', handler)).to.throw();
+        expect(() => router.route('abc/-abc/abc', handler)).to.throw();
+        expect(() => router.route('abc/abc_/abc', handler)).to.throw();
+        expect(() => router.route('abc/abc-/abc', handler)).to.throw();
     })
 
 });

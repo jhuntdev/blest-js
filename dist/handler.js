@@ -36,6 +36,10 @@ const createRequestHandler = (routes) => {
                 if (typeof route.handler !== 'function') {
                     throw new Error('Route handler is not valid: ' + key);
                 }
+                myRoutes[key] = {
+                    ...route,
+                    handler: [route.handler]
+                };
             }
             else {
                 for (let j = 0; j < route.length; j++) {
@@ -43,8 +47,8 @@ const createRequestHandler = (routes) => {
                         throw new Error('All route handlers must be functions: ' + key);
                     }
                 }
+                myRoutes[key] = { ...route };
             }
-            myRoutes[key] = { ...route };
         }
         else if (typeof route === 'function') {
             myRoutes[key] = {
@@ -93,7 +97,7 @@ const handleRequest = async (routes, requests, context = {}) => {
             return handleError(400, 'Request items should have unique IDs');
         uniqueIds.push(id);
         const thisRoute = routes.hasOwnProperty(route) ? routes[route] : null;
-        const routeHandler = (thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.handler) || thisRoute || routeNotFound;
+        const routeHandler = (thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.handler) || thisRoute || [routeNotFound];
         const requestObject = {
             id,
             route,
@@ -103,7 +107,7 @@ const handleRequest = async (routes, requests, context = {}) => {
         const myContext = {
             requestId: id,
             routeName: route,
-            selector: requestObject.selector,
+            selector: selector,
             requestTime: Date.now(),
             ...context
         };
@@ -116,8 +120,8 @@ exports.handleRequest = handleRequest;
 const handleResult = (result) => {
     return [result, null];
 };
-const handleError = (code, message) => {
-    return [null, { code, message }];
+const handleError = (status, message) => {
+    return [null, { status, message }];
 };
 const routeNotFound = () => {
     throw { message: 'Not Found', status: 404 };
@@ -136,11 +140,29 @@ const routeReducer = async (handler, request, context, timeout) => {
                 }, timeout);
             }
             const safeContext = context ? (0, utilities_1.cloneDeep)(context) : {};
-            let result;
+            let result = null;
+            let error = null;
             if (Array.isArray(handler)) {
                 for (let i = 0; i < handler.length; i++) {
-                    const tempResult = await handler[i](parameters, safeContext);
-                    if (tempResult) {
+                    if ((timedOut || error) && handler[i].length <= 2)
+                        continue;
+                    if (!error && handler[i].length > 2)
+                        continue;
+                    let tempResult;
+                    try {
+                        if (error) {
+                            tempResult = await handler[i](parameters, safeContext, error);
+                        }
+                        else {
+                            tempResult = await handler[i](parameters, safeContext);
+                        }
+                    }
+                    catch (tempErr) {
+                        if (!error) {
+                            error = tempErr;
+                        }
+                    }
+                    if (!error && tempResult) {
                         if (result) {
                             console.error(`Multiple handlers on the route "${route}" returned results`);
                             return resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
@@ -152,10 +174,15 @@ const routeReducer = async (handler, request, context, timeout) => {
                 }
             }
             else {
+                console.warn(`Non-array route handlers are deprecated: ${route}`);
                 result = await handler(parameters, safeContext);
             }
             if (timedOut) {
                 return reject();
+            }
+            if (error) {
+                const responseError = assembleError(error);
+                return resolve([id, route, null, responseError]);
             }
             if (result && (typeof result !== 'object' || Array.isArray(result))) {
                 console.error(`The route "${route}" did not return a result object`);
@@ -173,17 +200,24 @@ const routeReducer = async (handler, request, context, timeout) => {
             if (timer) {
                 clearTimeout(timer);
             }
-            const responseError = {
-                message: error.message || 'Internal Server Error',
-                status: error.status || 500
-            };
-            if (error.code) {
-                responseError.code = error.code;
-            }
-            if (process.env.NODE_ENV !== 'production' && error.stack) {
-                responseError.stack = error.stack;
-            }
+            const responseError = assembleError(error);
             resolve([id, route, null, responseError]);
         }
     });
+};
+const assembleError = (error) => {
+    const responseError = {
+        message: error.message || 'Internal Server Error',
+        status: error.status || 500
+    };
+    if (error.code) {
+        responseError.code = error.code;
+    }
+    if (error.data) {
+        responseError.data = error.data;
+    }
+    if (process.env.NODE_ENV !== 'production' && error.stack) {
+        responseError.stack = error.stack;
+    }
+    return responseError;
 };
