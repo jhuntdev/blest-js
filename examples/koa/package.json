@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@koa/cors": "^4.0.0",
-    "blest-js": "^0.1.7",
+    "blest-js": "^0.1.8",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.0"
   }
