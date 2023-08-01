@@ -25,27 +25,31 @@ class HttpClient {
         }
     }
     process() {
-        const newQueue = this.queue.splice(0, this.maxBatchSize);
-        clearTimeout(this.timeout);
-        if (!this.queue.length) {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
             this.timeout = null;
         }
-        else {
-            this.timeout = setTimeout(() => {
-                this.process();
-            }, this.bufferDelay);
+        console.log(this.queue);
+        if (!this.queue.length) {
+            return;
         }
-        httpPostRequest(this.url, newQueue, this.headers)
-            .then(async (data) => {
-            data.forEach((r) => {
-                this.emitter.emit(r[0], r[2], r[3]);
+        const copyQueue = this.queue.map((q) => [...q]);
+        this.queue = [];
+        const batchCount = Math.ceil(copyQueue.length / this.maxBatchSize);
+        for (let i = 0; i < batchCount; i++) {
+            const myQueue = copyQueue.slice(i * this.maxBatchSize, (i + 1) * this.maxBatchSize);
+            httpPostRequest(this.url, myQueue, this.headers)
+                .then(async (data) => {
+                data.forEach((r) => {
+                    this.emitter.emit(r[0], r[2], r[3]);
+                });
+            })
+                .catch((error) => {
+                myQueue.forEach((q) => {
+                    this.emitter.emit(q[0], null, error);
+                });
             });
-        })
-            .catch((error) => {
-            newQueue.forEach((q) => {
-                this.emitter.emit(q[0], null, error);
-            });
-        });
+        }
     }
     request(route, params, selector) {
         return new Promise((resolve, reject) => {
@@ -69,9 +73,7 @@ class HttpClient {
             });
             this.queue.push([id, route, params || null, selector || null]);
             if (!this.timeout) {
-                this.timeout = setTimeout(() => {
-                    this.process();
-                }, 1);
+                this.timeout = setTimeout(() => { this.process(); }, this.bufferDelay);
             }
         });
     }
