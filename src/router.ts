@@ -4,7 +4,6 @@ import { handleRequest } from './handler';
 export interface RouterOptions {
   introspection?: boolean
   timeout?: number
-  disableWarnings?: boolean
 }
 
 export class Router {
@@ -13,7 +12,6 @@ export class Router {
   private middleware: any[] = [];
   private afterware: any[] = [];
   private timeout: number = 0;
-
   public routes: any = {};
 
   constructor(options: any) {
@@ -42,6 +40,8 @@ export class Router {
         this.middleware.push(handlers[i]);
       } else if (argCount === 3) {
         this.afterware.push(handlers[i]);
+      } else {
+        throw new Error('Middleware should have at most three arguments');
       }
     }
 
@@ -65,7 +65,9 @@ export class Router {
     } else {
       for (let i = 0; i < handlers.length; i++) {
         if (typeof handlers[i] !== 'function') {
-          throw new Error('All handlers must be functions: ' + i);
+          throw new Error('Handlers must be functions: ' + i);
+        } else if (handlers[i].length > 2) {
+          throw new Error('Handlers should have at most two arguments');
         }
       }
     }

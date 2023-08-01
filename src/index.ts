@@ -40,20 +40,22 @@
 import { Router, RouterOptions } from './router';
 import { createRequestHandler, handleRequest } from './handler';
 import { createHttpServer, ServerOptions } from './server';
-import { createHttpClient } from './client';
+import { HttpClient, createHttpClient } from './client'
 
 export { Router, RouterOptions } from './router';
 export { createHttpServer, ServerOptions } from './server';
-export { createHttpClient } from './client';
+export { HttpClient, createHttpClient, ClientOptions } from './client';
 export { createRequestHandler } from './handler';
+
+interface BlestAppOptions extends RouterOptions, ServerOptions {}
 
 class BlestApp extends Router {
 
-  options: any;
+  options: BlestAppOptions;
 
-  constructor(routerOptions?: RouterOptions, serverOptions?: ServerOptions) {
-    super(routerOptions);
-    this.options = serverOptions;
+  constructor(options?: BlestAppOptions) {
+    super(options);
+    this.options = options || {};
   }
 
   public listen(...args: any[]) {
@@ -65,15 +67,16 @@ class BlestApp extends Router {
 
 }
 
-const defaultExport = (routerOptions?: RouterOptions, serverOptions?: ServerOptions) => {
-  return new BlestApp(routerOptions, serverOptions);
+const defaultExport = (options?: BlestAppOptions) => {
+  return new BlestApp(options);
 };
 
 defaultExport.Router = Router;
 defaultExport.createHttpServer = createHttpServer;
+defaultExport.HttpClient = HttpClient;
 defaultExport.createHttpClient = createHttpClient;
 defaultExport.createRequestHandler = createRequestHandler;
 
-module.exports = defaultExport
+module.exports = defaultExport;
 
-export default defaultExport
+export default defaultExport;

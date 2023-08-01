@@ -180,6 +180,9 @@ const routeReducer = async (handler, request, context, timeout) => {
             if (timedOut) {
                 return reject();
             }
+            if (timer) {
+                clearTimeout(timer);
+            }
             if (error) {
                 const responseError = assembleError(error);
                 return resolve([id, route, null, responseError]);
@@ -190,9 +193,6 @@ const routeReducer = async (handler, request, context, timeout) => {
             }
             if (result && selector) {
                 result = (0, utilities_1.filterObject)(result, selector);
-            }
-            if (timer) {
-                clearTimeout(timer);
             }
             resolve([id, route, result, null]);
         }

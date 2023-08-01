@@ -1,7 +1,7 @@
 const connect = require('connect');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { createRequestHandler } = require('blest-js');
+const { Router } = require('blest-js');
 
 const app = connect();
 const port = 8080;
@@ -9,34 +9,33 @@ const port = 8080;
 app.use(cors());
 app.use(bodyParser.json());
 
-const requestHandler = createRequestHandler({
-  hello: () => {
-    return {
-      hello: 'world',
-      bonjour: 'le monde',
-      hola: 'mundo',
-      hallo: 'welt'
-    }
-  },
-  greet: [
-    ({ name }, context) => {
-        context.user = {
-            name: name || 'Tarzan'
-        }
-    },
-    ({ name }, context) => {
-        return {
-            greeting: `Hi, ${context.user.name}!`
-        }
-    }
-  ],
-  fail: () => {
-    throw new Error('Intentional failure')
+const router = new Router();
+
+router.route('hello', () => {
+  return {
+    hello: 'world',
+    bonjour: 'le monde',
+    hola: 'mundo',
+    hallo: 'welt'
   }
 });
 
+router.route('greet', ({ name }, context) => {
+  context.user = {
+    name: name || 'Tarzan'
+  }
+}, ({ name }, context) => {
+  return {
+    greeting: `Hi, ${context.user.name}!`
+  }
+});
+
+router.route('fail', () => {
+  throw new Error('Intentional failure')
+});
+
 app.use('/', async (req, res) => {
-  const [result, error] = await requestHandler(req.body, {
+  const [result, error] = await router.handle(req.body, {
     headers: req.headers
   });
   if (error) {

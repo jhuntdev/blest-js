@@ -1,30 +1,29 @@
 const Hapi = require('@hapi/hapi');
-const { createRequestHandler } = require('blest-js');
+const { Router } = require('blest-js');
 
-const requestHandler = createRequestHandler({
-  hello: () => {
-    return {
-      hello: 'world',
-      bonjour: 'le monde',
-      hola: 'mundo',
-      hallo: 'welt'
-    }
-  },
-  greet: [
-    ({ name }, context) => {
-        context.user = {
-            name: name || 'Tarzan'
-        }
-    },
-    ({ name }, context) => {
-        return {
-            greeting: `Hi, ${context.user.name}!`
-        }
-    }
-  ],
-  fail: () => {
-    throw new Error('Intentional failure')
+const router = new Router();
+
+router.route('hello', () => {
+  return {
+    hello: 'world',
+    bonjour: 'le monde',
+    hola: 'mundo',
+    hallo: 'welt'
   }
+});
+
+router.route('greet', ({ name }, context) => {
+  context.user = {
+    name: name || 'Tarzan'
+  }
+}, ({ name }, context) => {
+  return {
+    greeting: `Hi, ${context.user.name}!`
+  }
+});
+
+router.route('fail', () => {
+  throw new Error('Intentional failure')
 });
 
 const init = async () => {
@@ -40,7 +39,7 @@ const init = async () => {
     method: 'POST',
     path: '/',
     handler: async (request, h) => {
-      const [result, error] = await requestHandler(request.payload, {
+      const [result, error] = await router.handle(request.payload, {
         headers: request.headers
       });
       if (error) {

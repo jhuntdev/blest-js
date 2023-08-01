@@ -1,7 +1,6 @@
 export interface RouterOptions {
     introspection?: boolean;
     timeout?: number;
-    disableWarnings?: boolean;
 }
 export declare class Router {
     private introspection;

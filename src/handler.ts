@@ -207,6 +207,9 @@ const routeReducer = async (
       if (timedOut) {
         return reject();
       }
+      if (timer) {
+        clearTimeout(timer);
+      }
       if (error) {
         const responseError = assembleError(error);
         return resolve([id, route, null, responseError]);
@@ -217,9 +220,6 @@ const routeReducer = async (
       }
       if (result && selector) {
         result = filterObject(result, selector);
-      }
-      if (timer) {
-        clearTimeout(timer);
       }
       resolve([id, route, result, null]);
     } catch (error: any) {

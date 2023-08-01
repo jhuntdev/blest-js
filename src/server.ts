@@ -16,7 +16,6 @@ export interface ServerOptions {
   xFrameOptions?: string
   xPermittedCrossDomainPolicies?: string
   xXssProtection?: string
-  disableWarnings?: boolean
 }
 
 export const createHttpServer = (requestHandler: (requests: any, context: any) => Promise<[any, any]>, options?: ServerOptions): http.Server => {
