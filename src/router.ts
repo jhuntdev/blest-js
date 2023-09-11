@@ -82,8 +82,8 @@ export class Router {
       timeout: this.timeout
     };
 
-    if (typeof lastArg !== 'function') {
-      this.describe(route, lastArg);
+    if (options) {
+      this.describe(route, options);
     }
 
   }

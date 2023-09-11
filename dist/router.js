@@ -76,8 +76,8 @@ class Router {
             validate: false,
             timeout: this.timeout
         };
-        if (typeof lastArg !== 'function') {
-            this.describe(route, lastArg);
+        if (options) {
+            this.describe(route, options);
         }
     }
     describe(route, config) {

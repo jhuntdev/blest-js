@@ -177,11 +177,11 @@ const routeReducer = async (handler, request, context, timeout) => {
                 console.warn(`Non-array route handlers are deprecated: ${route}`);
                 result = await handler(parameters, safeContext);
             }
-            if (timedOut) {
-                return reject();
-            }
             if (timer) {
                 clearTimeout(timer);
+            }
+            if (timedOut) {
+                return reject();
             }
             if (error) {
                 const responseError = assembleError(error);

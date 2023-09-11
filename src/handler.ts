@@ -204,11 +204,11 @@ const routeReducer = async (
         console.warn(`Non-array route handlers are deprecated: ${route}`);
         result = await handler(parameters, safeContext);
       }
-      if (timedOut) {
-        return reject();
-      }
       if (timer) {
         clearTimeout(timer);
+      }
+      if (timedOut) {
+        return reject();
       }
       if (error) {
         const responseError = assembleError(error);
@@ -247,4 +247,4 @@ const assembleError = (error:any) => {
     responseError.stack = error.stack;
   }
   return responseError;
-}
+};

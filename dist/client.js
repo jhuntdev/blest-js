@@ -29,7 +29,6 @@ class HttpClient {
             clearTimeout(this.timeout);
             this.timeout = null;
         }
-        console.log(this.queue);
         if (!this.queue.length) {
             return;
         }
