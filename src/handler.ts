@@ -173,6 +173,7 @@ const routeReducer = async (
         }, timeout);
       }
       const safeContext = context ? cloneDeep(context) : {};
+      const safeParams = parameters || {}
       let result: any = null;
       let error: any = null;
       if (Array.isArray(handler)) {
@@ -182,9 +183,9 @@ const routeReducer = async (
           let tempResult;
           try {
             if (error) {
-              tempResult = await handler[i](parameters, safeContext, error);
+              tempResult = await handler[i](safeParams, safeContext, error);
             } else {
-              tempResult = await handler[i](parameters, safeContext);
+              tempResult = await handler[i](safeParams, safeContext);
             }
           } catch (tempErr) {
             if (!error) {
