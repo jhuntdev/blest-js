@@ -139,7 +139,8 @@ const routeReducer = async (handler, request, context, timeout) => {
                     resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
                 }, timeout);
             }
-            const safeContext = context ? (0, utilities_1.cloneDeep)(context) : {};
+            const safeContext = context ? structuredClone(context) : {};
+            const safeParams = parameters || {};
             let result = null;
             let error = null;
             if (Array.isArray(handler)) {
@@ -151,10 +152,10 @@ const routeReducer = async (handler, request, context, timeout) => {
                     let tempResult;
                     try {
                         if (error) {
-                            tempResult = await handler[i](parameters, safeContext, error);
+                            tempResult = await handler[i](safeParams, safeContext, error);
                         }
                         else {
-                            tempResult = await handler[i](parameters, safeContext);
+                            tempResult = await handler[i](safeParams, safeContext);
                         }
                     }
                     catch (tempErr) {

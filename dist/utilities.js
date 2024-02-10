@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cloneDeep = exports.filterObject = exports.validateRoute = exports.routeRegex = void 0;
+exports.filterObject = exports.validateRoute = exports.routeRegex = void 0;
 exports.routeRegex = /^[a-zA-Z][a-zA-Z0-9_\-\/]*[a-zA-Z0-9]$/;
 const validateRoute = (route) => {
     if (!route) {
@@ -80,25 +80,3 @@ const filterObject = (obj, arr) => {
     return obj;
 };
 exports.filterObject = filterObject;
-const cloneDeep = (value) => {
-    if (typeof value !== 'object' || value === null) {
-        return value;
-    }
-    let clonedValue;
-    if (Array.isArray(value)) {
-        clonedValue = [];
-        for (let i = 0; i < value.length; i++) {
-            clonedValue[i] = (0, exports.cloneDeep)(value[i]);
-        }
-    }
-    else {
-        clonedValue = {};
-        for (let key in value) {
-            if (value.hasOwnProperty(key)) {
-                clonedValue[key] = (0, exports.cloneDeep)(value[key]);
-            }
-        }
-    }
-    return clonedValue;
-};
-exports.cloneDeep = cloneDeep;

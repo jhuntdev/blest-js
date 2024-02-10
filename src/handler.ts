@@ -1,4 +1,4 @@
-import { validateRoute, cloneDeep, filterObject } from './utilities';
+import { validateRoute, filterObject } from './utilities';
 
 export const createRequestHandler = (routes: { [key: string]: any }) => {
 
@@ -172,7 +172,7 @@ const routeReducer = async (
           resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
         }, timeout);
       }
-      const safeContext = context ? cloneDeep(context) : {};
+      const safeContext = context ? structuredClone(context) : {};
       const safeParams = parameters || {}
       let result: any = null;
       let error: any = null;

@@ -65,27 +65,3 @@ export const filterObject = (obj: any, arr: any[]): any => {
   }
   return obj;
 }
-
-export const cloneDeep = (value: any): any => {
-  if (typeof value !== 'object' || value === null) {
-    return value;
-  }
-  
-  let clonedValue: any;
-  
-  if (Array.isArray(value)) {
-    clonedValue = [];
-    for (let i = 0; i < value.length; i++) {
-      clonedValue[i] = cloneDeep(value[i]);
-    }
-  } else {
-    clonedValue = {};
-    for (let key in value) {
-      if (value.hasOwnProperty(key)) {
-        clonedValue[key] = cloneDeep(value[key]);
-      }
-    }
-  }
-  
-  return clonedValue;
-}
