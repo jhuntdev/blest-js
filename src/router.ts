@@ -14,7 +14,7 @@ export class Router {
   private timeout: number = 0;
   public routes: any = {};
 
-  constructor(options: any) {
+  constructor(options?: RouterOptions) {
     if (options?.introspection) {
       if (typeof options.introspection !== 'boolean') {
         throw new Error('Introspection should be a boolean');
