@@ -3,7 +3,7 @@ import events from 'events';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ClientOptions {
-    headers?: any
+    httpHeaders?: any
     maxBatchSize?: number
     bufferDelay?: number
 }
@@ -11,7 +11,7 @@ export interface ClientOptions {
 export class HttpClient {
 
     private url = '';
-    private headers = {};
+    private httpHeaders = {};
     private maxBatchSize = 25;
     private bufferDelay = 10;
     private queue: any[] = [];
@@ -41,7 +41,7 @@ export class HttpClient {
         const batchCount = Math.ceil(copyQueue.length / this.maxBatchSize)
         for (let i = 0; i < batchCount; i++) {
             const myQueue = copyQueue.slice(i * this.maxBatchSize, (i + 1) * this.maxBatchSize)
-            httpPostRequest(this.url, myQueue, this.headers)
+            httpPostRequest(this.url, myQueue, this.httpHeaders)
             .then(async (data: any) => {
                 data.forEach((r: any) => {
                     this.emitter.emit(r[0], r[2], r[3]);
@@ -82,14 +82,14 @@ export class HttpClient {
 
 
 
-function httpPostRequest(url: string, data: any, headers: any = {}): Promise<any> {
+function httpPostRequest(url: string, data: any, httpHeaders: any = {}): Promise<any> {
     return new Promise((resolve, reject) => {
         const requestData = JSON.stringify(data);
         
         const options: http.RequestOptions = {
             method: 'POST',
             headers: {
-                ...headers,
+                ...httpHeaders,
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(requestData)
             }
@@ -129,9 +129,9 @@ const validateClientOptions = (options: ClientOptions) => {
     } else if (typeof options !== 'object') {
         return 'Options should be an object';
     } else {
-        if (options.headers) {
-            if (typeof options.headers !== 'object' || Array.isArray(options.headers)) {
-                return '"headers" option should be an object';
+        if (options.httpHeaders) {
+            if (typeof options.httpHeaders !== 'object' || Array.isArray(options.httpHeaders)) {
+                return '"httpHeaders" option should be an object';
             }
         }
         if (options.maxBatchSize) {
@@ -165,7 +165,7 @@ export const createHttpClient = (url: string, options?: ClientOptions) => {
         }
     }
 
-    const headers = options?.headers || null;
+    const httpHeaders = options?.httpHeaders || null;
     const maxBatchSize = options?.maxBatchSize || 100;
     const bufferDelay = options?.bufferDelay || 10;
     let queue: any[] = [];
@@ -183,7 +183,7 @@ export const createHttpClient = (url: string, options?: ClientOptions) => {
             }, bufferDelay);
         }
         
-        httpPostRequest(url, newQueue, headers)
+        httpPostRequest(url, newQueue, httpHeaders)
         .then(async (data: any) => {
             data.forEach((r: any) => {
                 emitter.emit(r[0], r[2], r[3]);

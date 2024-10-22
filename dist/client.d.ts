@@ -1,11 +1,11 @@
 export interface ClientOptions {
-    headers?: any;
+    httpHeaders?: any;
     maxBatchSize?: number;
     bufferDelay?: number;
 }
 export declare class HttpClient {
     private url;
-    private headers;
+    private httpHeaders;
     private maxBatchSize;
     private bufferDelay;
     private queue;

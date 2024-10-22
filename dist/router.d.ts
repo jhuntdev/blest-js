@@ -8,7 +8,7 @@ export declare class Router {
     private afterware;
     private timeout;
     routes: any;
-    constructor(options: any);
+    constructor(options?: RouterOptions);
     use(...handlers: any[]): void;
     route(route: string, ...args: any[]): void;
     describe(route: string, config: any): void;

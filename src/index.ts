@@ -4,7 +4,7 @@
   (c) 2023 JHunt <blest@jhunt.dev>
   License: MIT
   -------------------------------------------------------------------------------------------------
-  Sample Request [id, endpoint, parameters (optional), selector (optional)]
+  Sample Request [id, endpoint, parameters (optional), headers (optional)]
   [
     [
       "abc123",
@@ -14,7 +14,10 @@
         "dividend": 22,
         "divisor": 7
       },
-      ["status",["result",["quotient"]]]
+      {
+        "_fields": ["status",["result",["quotient"]]],
+        ...
+      }
     ]
   ]
   -------------------------------------------------------------------------------------------------

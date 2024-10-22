@@ -20,13 +20,17 @@ router.route('hello', () => {
   }
 });
 
-router.route('greet', ({ name }, context) => {
-  context.user = {
-    name: name || 'Tarzan'
+const authMiddleware = (params, context) => {
+  if (context.headers?.auth === 'myToken') {
+    return;
+  } else {
+    throw new Error('Unauthorized');
   }
-}, ({ name }, context) => {
+};
+
+router.route('greet', authMiddleware, (params, context) => {
   return {
-    greeting: `Hi, ${context.user.name}!`
+    greeting: `Hi, ${params.name}!`
   }
 });
 

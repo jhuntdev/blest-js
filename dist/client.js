@@ -10,7 +10,7 @@ const uuid_1 = require("uuid");
 class HttpClient {
     constructor(url, options) {
         this.url = '';
-        this.headers = {};
+        this.httpHeaders = {};
         this.maxBatchSize = 25;
         this.bufferDelay = 10;
         this.queue = [];
@@ -37,7 +37,7 @@ class HttpClient {
         const batchCount = Math.ceil(copyQueue.length / this.maxBatchSize);
         for (let i = 0; i < batchCount; i++) {
             const myQueue = copyQueue.slice(i * this.maxBatchSize, (i + 1) * this.maxBatchSize);
-            httpPostRequest(this.url, myQueue, this.headers)
+            httpPostRequest(this.url, myQueue, this.httpHeaders)
                 .then(async (data) => {
                 data.forEach((r) => {
                     this.emitter.emit(r[0], r[2], r[3]);
@@ -79,13 +79,13 @@ class HttpClient {
 }
 exports.HttpClient = HttpClient;
 ;
-function httpPostRequest(url, data, headers = {}) {
+function httpPostRequest(url, data, httpHeaders = {}) {
     return new Promise((resolve, reject) => {
         const requestData = JSON.stringify(data);
         const options = {
             method: 'POST',
             headers: {
-                ...headers,
+                ...httpHeaders,
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(requestData)
             }
@@ -121,9 +121,9 @@ const validateClientOptions = (options) => {
         return 'Options should be an object';
     }
     else {
-        if (options.headers) {
-            if (typeof options.headers !== 'object' || Array.isArray(options.headers)) {
-                return '"headers" option should be an object';
+        if (options.httpHeaders) {
+            if (typeof options.httpHeaders !== 'object' || Array.isArray(options.httpHeaders)) {
+                return '"httpHeaders" option should be an object';
             }
         }
         if (options.maxBatchSize) {
@@ -153,7 +153,7 @@ const createHttpClient = (url, options) => {
             throw new Error(optionsError);
         }
     }
-    const headers = (options === null || options === void 0 ? void 0 : options.headers) || null;
+    const httpHeaders = (options === null || options === void 0 ? void 0 : options.httpHeaders) || null;
     const maxBatchSize = (options === null || options === void 0 ? void 0 : options.maxBatchSize) || 100;
     const bufferDelay = (options === null || options === void 0 ? void 0 : options.bufferDelay) || 10;
     let queue = [];
@@ -170,7 +170,7 @@ const createHttpClient = (url, options) => {
                 process();
             }, bufferDelay);
         }
-        httpPostRequest(url, newQueue, headers)
+        httpPostRequest(url, newQueue, httpHeaders)
             .then(async (data) => {
             data.forEach((r) => {
                 emitter.emit(r[0], r[2], r[3]);

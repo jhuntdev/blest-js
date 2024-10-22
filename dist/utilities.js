@@ -1,18 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.filterObject = exports.validateRoute = exports.routeRegex = void 0;
+exports.filterObject = exports.validateRoute = exports.systemRouteRegex = exports.routeRegex = void 0;
 exports.routeRegex = /^[a-zA-Z][a-zA-Z0-9_\-\/]*[a-zA-Z0-9]$/;
-const validateRoute = (route) => {
+exports.systemRouteRegex = /^_[a-zA-Z][a-zA-Z0-9_\-\/]*[a-zA-Z0-9]$/;
+const validateRoute = (route, system = false) => {
     if (!route) {
         return 'Route is required';
+    }
+    else if (system) {
+        if (!exports.systemRouteRegex.test(route)) {
+            const routeLength = route.length;
+            if (routeLength < 3) {
+                return 'System route should be at least three characters long';
+            }
+            else if (route.charAt(0) !== '_') {
+                return 'System route should start with an underscore';
+            }
+            else if (!/[a-zA-Z0-9]/.test(route.charAt(-1))) {
+                return 'System route should end with a letter or a number';
+            }
+            else {
+                return 'System route should contain only letters, numbers, dashes, underscores, and forward slashes';
+            }
+        }
     }
     else if (!exports.routeRegex.test(route)) {
         const routeLength = route.length;
         if (routeLength < 2) {
             return 'Route should be at least two characters long';
-        }
-        else if (route.charAt(routeLength - 1) === '/') {
-            return 'Route should not end in a forward slash';
         }
         else if (!/[a-zA-Z]/.test(route.charAt(0))) {
             return 'Route should start with a letter';

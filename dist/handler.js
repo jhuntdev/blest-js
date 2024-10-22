@@ -82,17 +82,19 @@ const handleRequest = async (routes, requests, context = {}) => {
         const id = request[0];
         const route = request[1];
         const parameters = request[2] || null;
-        const selector = request[3] || null;
+        const headers = request[3] || null;
         if (!id || typeof id !== 'string') {
             return handleError(400, 'Request item should have an ID');
         }
         if (!route || typeof route !== 'string') {
             return handleError(400, 'Request item should have a route');
         }
-        if (parameters && typeof parameters !== 'object')
+        if (parameters && typeof parameters !== 'object') {
             return handleError(400, 'Request item parameters should be a JSON object');
-        if (selector && !Array.isArray(selector))
-            return handleError(400, 'Request item selector should be a JSON array');
+        }
+        if (headers && typeof headers !== 'object') {
+            return handleError(400, 'Request item headers should be a JSON object');
+        }
         if (uniqueIds.indexOf(id) > -1)
             return handleError(400, 'Request items should have unique IDs');
         uniqueIds.push(id);
@@ -102,14 +104,12 @@ const handleRequest = async (routes, requests, context = {}) => {
             id,
             route,
             parameters,
-            selector,
+            headers
         };
         const myContext = {
-            requestId: id,
-            routeName: route,
-            selector: selector,
-            requestTime: Date.now(),
-            ...context
+            ...context,
+            request: requestObject,
+            time: Date.now()
         };
         promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
     }
@@ -130,7 +130,7 @@ const routeReducer = async (handler, request, context, timeout) => {
     return new Promise(async (resolve, reject) => {
         let timer;
         let timedOut = false;
-        const { id, route, parameters, selector } = request;
+        const { id, route, parameters } = request;
         try {
             if (timeout && timeout > 0) {
                 timer = setTimeout(() => {
@@ -192,9 +192,9 @@ const routeReducer = async (handler, request, context, timeout) => {
                 console.error(`The route "${route}" did not return a result object`);
                 return resolve([id, route, null, { message: 'Internal Server Error', status: 500 }]);
             }
-            if (result && selector) {
-                result = (0, utilities_1.filterObject)(result, selector);
-            }
+            // if (result && selector) {
+            //   result = filterObject(result, selector);
+            // }
             resolve([id, route, result, null]);
         }
         catch (error) {

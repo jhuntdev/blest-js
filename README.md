@@ -1,6 +1,6 @@
 # BLEST.js
 
-The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching and selective returns, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
+The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
 
 To learn more about BLEST, please visit the website: https://blest.jhunt.dev
 
@@ -10,9 +10,8 @@ For a front-end implementation in React, please visit https://github.com/jhuntde
 
 - Built on JSON - Reduce parsing time and overhead
 - Request Batching - Save bandwidth and reduce load times
-- Compact Payloads - Save more bandwidth
-- Selective Returns - Save even more bandwidth
-- Single Endpoint - Reduce complexity and improve data privacy
+- Compact Payloads - Save even more bandwidth
+- Single Endpoint - Reduce complexity
 - Fully Encrypted - Improve data privacy
 
 ## Installation
@@ -87,10 +86,8 @@ const port = 8080;
 
 // Create some middleware (optional)
 const authMiddleware = (params, context) => {
-  if (params?.name) {
-    context.user = {
-      name: params.name
-    };
+  if (context.headers?.auth === 'myToken') {
+    return;
   } else {
     throw new Error('Unauthorized');
   }
@@ -99,7 +96,7 @@ const authMiddleware = (params, context) => {
 // Create a route controller
 const greetController = (params, context) => {
   return {
-    greeting: `Hi, ${context.user?.name}!`
+    greeting: `Hi, ${params.name}!`
   };
 };
 
@@ -112,9 +109,7 @@ app.use(express.json());
 
 // Use the request handler
 app.post('/', async (req, res, next) => {
-  const [result, error] = await router.handle(req.body, {
-    headers: req.headers
-  });
+  const [result, error] = await router.handle(req.body);
   if (error) {
     return next(error);
   } else {
@@ -137,13 +132,13 @@ const { HttpClient } = require('blest-js');
 const client = new HttpClient('http://localhost:8080', {
   maxBatchSize: 25,
   bufferDelay: 10,
-  headers: {
-    'Authorization': 'Bearer token'
+  httpHeaders: {
+    // ...
   }
 });
 
 // Send a request
-client.request('greet', { name: 'Steve' }, ['greeting'])
+client.request('greet', { name: 'Steve' }, { "auth": "myToken" })
 .then((result) => {
   // Do something with the result
 })
