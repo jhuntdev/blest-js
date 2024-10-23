@@ -84,7 +84,7 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
 
     const id = request[0];
     const route = request[1];
-    const parameters = request[2] || null;
+    const body = request[2] || null;
     const headers = request[3] || null;
 
     if (!id || typeof id !== 'string') {
@@ -93,8 +93,8 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     if (!route || typeof route !== 'string') {
         return handleError(400, 'Request item should have a route');
     }
-    if (parameters && typeof parameters !== 'object') {
-        return handleError(400, 'Request item parameters should be a JSON object');
+    if (body && typeof body !== 'object') {
+        return handleError(400, 'Request item body should be a JSON object');
     }
     if (headers && typeof headers !== 'object') {
         return handleError(400, 'Request item headers should be a JSON object');
@@ -109,7 +109,7 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     const requestObject = {
         id,
         route,
-        parameters,
+        body,
         headers
     };
 
@@ -146,7 +146,7 @@ const routeNotFound = (): never => {
 interface RequestObject {
   id: string;
   route: string;
-  parameters: any;
+  body: any;
   headers: any;
 }
 
@@ -155,7 +155,7 @@ interface RequestContext {
 }
 
 const routeReducer = async (
-  handler: ((parameters: any, context: RequestContext, error?: any) => any) | ((parameters: any, context: RequestContext, error?: any) => any)[],
+  handler: ((body: any, context: RequestContext, error?: any) => any) | ((body: any, context: RequestContext, error?: any) => any)[],
   request: RequestObject,
   context?: RequestContext,
   timeout?: number
@@ -163,7 +163,7 @@ const routeReducer = async (
   return new Promise(async (resolve, reject) => {
     let timer;
     let timedOut = false;
-    const { id, route, parameters } = request;
+    const { id, route, body } = request;
     try {
       if (timeout && timeout > 0) {
         timer = setTimeout(() => {
@@ -173,7 +173,7 @@ const routeReducer = async (
         }, timeout);
       }
       const safeContext = context ? structuredClone(context) : {};
-      const safeParams = parameters || {}
+      const safeBody = body || {}
       let result: any = null;
       let error: any = null;
       if (Array.isArray(handler)) {
@@ -183,9 +183,9 @@ const routeReducer = async (
           let tempResult;
           try {
             if (error) {
-              tempResult = await handler[i](safeParams, safeContext, error);
+              tempResult = await handler[i](safeBody, safeContext, error);
             } else {
-              tempResult = await handler[i](safeParams, safeContext);
+              tempResult = await handler[i](safeBody, safeContext);
             }
           } catch (tempErr) {
             if (!error) {
@@ -203,7 +203,7 @@ const routeReducer = async (
         }
       } else {
         console.warn(`Non-array route handlers are deprecated: ${route}`);
-        result = await handler(parameters, safeContext);
+        result = await handler(safeBody, safeContext);
       }
       if (timer) {
         clearTimeout(timer);

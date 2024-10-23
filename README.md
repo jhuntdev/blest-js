@@ -1,6 +1,6 @@
 # BLEST.js
 
-The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
+The NodeJS reference implementation of BLEST (Batch-able, Lightweight, Encrypted State Transfer), an improved communication protocol for web APIs which leverages JSON, supports request batching by default, and provides a modern alternative to REST. It includes examples for Connect, Express, Fastify, Hapi, and Koa.
 
 To learn more about BLEST, please visit the website: https://blest.jhunt.dev
 

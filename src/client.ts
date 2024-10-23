@@ -55,14 +55,14 @@ export class HttpClient {
         }
     }
 
-    public request(route: string, params: object | null, selector: any[] | null) {
+    public request(route: string, body: object | null, headers: object | null) {
         return new Promise((resolve, reject) => {
             if (!route) {
                 return reject(new Error('Route is required'));
-            } else if (params && typeof params !== 'object') {
-                return reject(new Error('Params should be an object'));
-            } else if (selector && !Array.isArray(selector)) {
-                return reject(new Error('Selector should be an array'));
+            } else if (body && typeof body !== 'object') {
+                return reject(new Error('Body should be an object'));
+            } else if (headers && typeof headers !== 'object') {
+                return reject(new Error('Headers should be an object'));
             }
             const id = uuidv4();
             this.emitter.once(id, (result: any, error: any) => {
@@ -72,7 +72,7 @@ export class HttpClient {
                     resolve(result);
                 }
             });
-            this.queue.push([id, route, params || null, selector || null]);
+            this.queue.push([id, route, body || null, headers || null]);
             if (!this.timeout) {
                 this.timeout = setTimeout(() => { this.process() }, this.bufferDelay);
             }
@@ -196,14 +196,14 @@ export const createHttpClient = (url: string, options?: ClientOptions) => {
         });
     };
 
-    const request = (route: string, params: object | null, selector: any[] | null) => {
+    const request = (route: string, body: object | null, headers: object | null) => {
         return new Promise((resolve, reject) => {
             if (!route) {
                 return reject(new Error('Route is required'));
-            } else if (params && typeof params !== 'object') {
-                return reject(new Error('Params should be an object'));
-            } else if (selector && !Array.isArray(selector)) {
-                return reject(new Error('Selector should be an array'));
+            } else if (body && typeof body !== 'object') {
+                return reject(new Error('Body should be an object'));
+            } else if (headers && typeof headers !== 'object') {
+                return reject(new Error('Headers should be an object'));
             }
             const id = uuidv4();
             emitter.once(id, (result: any, error: any) => {
@@ -213,7 +213,7 @@ export const createHttpClient = (url: string, options?: ClientOptions) => {
                     resolve(result);
                 }
             });
-            queue.push([id, route, params || null, selector || null]);
+            queue.push([id, route, body || null, headers || null]);
             if (!timeout) {
                 timeout = setTimeout(() => {
                     process();
