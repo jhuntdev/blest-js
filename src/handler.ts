@@ -115,7 +115,9 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
 
     const requestContext = {
       ...context,
-      request: requestObject,
+      id,
+      route,
+      headers,
       time: Date.now()
     };
 
