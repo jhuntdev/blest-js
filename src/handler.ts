@@ -113,13 +113,13 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
         headers
     };
 
-    const myContext = {
+    const requestContext = {
       ...context,
       request: requestObject,
       time: Date.now()
     };
 
-    promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute?.timeout)); 
+    promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute?.timeout)); 
     
   }
 
