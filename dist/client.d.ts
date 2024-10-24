@@ -13,6 +13,6 @@ export declare class HttpClient {
     private emitter;
     constructor(url: string, options?: ClientOptions);
     private process;
-    request(route: string, params: object | null, selector: any[] | null): Promise<unknown>;
+    request(route: string, body: object | null, headers: object | null): Promise<unknown>;
 }
-export declare const createHttpClient: (url: string, options?: ClientOptions) => (route: string, params: object | null, selector: any[] | null) => Promise<unknown>;
+export declare const createHttpClient: (url: string, options?: ClientOptions) => (route: string, body: object | null, headers: object | null) => Promise<unknown>;

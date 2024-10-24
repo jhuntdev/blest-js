@@ -81,7 +81,7 @@ const handleRequest = async (routes, requests, context = {}) => {
         }
         const id = request[0];
         const route = request[1];
-        const parameters = request[2] || null;
+        const body = request[2] || null;
         const headers = request[3] || null;
         if (!id || typeof id !== 'string') {
             return handleError(400, 'Request item should have an ID');
@@ -89,8 +89,8 @@ const handleRequest = async (routes, requests, context = {}) => {
         if (!route || typeof route !== 'string') {
             return handleError(400, 'Request item should have a route');
         }
-        if (parameters && typeof parameters !== 'object') {
-            return handleError(400, 'Request item parameters should be a JSON object');
+        if (body && typeof body !== 'object') {
+            return handleError(400, 'Request item body should be a JSON object');
         }
         if (headers && typeof headers !== 'object') {
             return handleError(400, 'Request item headers should be a JSON object');
@@ -103,15 +103,15 @@ const handleRequest = async (routes, requests, context = {}) => {
         const requestObject = {
             id,
             route,
-            parameters,
+            body,
             headers
         };
-        const myContext = {
+        const requestContext = {
             ...context,
             request: requestObject,
             time: Date.now()
         };
-        promises.push(routeReducer(routeHandler, requestObject, myContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
+        promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
     }
     const results = await Promise.all(promises);
     return handleResult(results);
@@ -130,7 +130,7 @@ const routeReducer = async (handler, request, context, timeout) => {
     return new Promise(async (resolve, reject) => {
         let timer;
         let timedOut = false;
-        const { id, route, parameters } = request;
+        const { id, route, body } = request;
         try {
             if (timeout && timeout > 0) {
                 timer = setTimeout(() => {
@@ -140,7 +140,7 @@ const routeReducer = async (handler, request, context, timeout) => {
                 }, timeout);
             }
             const safeContext = context ? structuredClone(context) : {};
-            const safeParams = parameters || {};
+            const safeBody = body || {};
             let result = null;
             let error = null;
             if (Array.isArray(handler)) {
@@ -152,10 +152,10 @@ const routeReducer = async (handler, request, context, timeout) => {
                     let tempResult;
                     try {
                         if (error) {
-                            tempResult = await handler[i](safeParams, safeContext, error);
+                            tempResult = await handler[i](safeBody, safeContext, error);
                         }
                         else {
-                            tempResult = await handler[i](safeParams, safeContext);
+                            tempResult = await handler[i](safeBody, safeContext);
                         }
                     }
                     catch (tempErr) {
@@ -176,7 +176,7 @@ const routeReducer = async (handler, request, context, timeout) => {
             }
             else {
                 console.warn(`Non-array route handlers are deprecated: ${route}`);
-                result = await handler(parameters, safeContext);
+                result = await handler(safeBody, safeContext);
             }
             if (timer) {
                 clearTimeout(timer);

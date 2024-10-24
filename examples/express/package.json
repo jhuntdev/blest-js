@@ -7,10 +7,10 @@
     "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "JHunt <blest@jhunt.dev>",
+  "author": "JHunt <hello@jhunt.dev>",
   "license": "MIT",
   "dependencies": {
-    "blest-js": "^0.1.9",
+    "blest-js": "^1.0.0",
     "cors": "^2.8.5",
     "express": "^4.18.2"
   }

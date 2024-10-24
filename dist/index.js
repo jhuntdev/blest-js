@@ -2,10 +2,10 @@
 /*
   -------------------------------------------------------------------------------------------------
   BLEST (Batch-able, Lightweight, Encrypted State Transfer) - A modern alternative to REST
-  (c) 2023 JHunt <blest@jhunt.dev>
+  (c) 2023 JHunt <hello@jhunt.dev>
   License: MIT
   -------------------------------------------------------------------------------------------------
-  Sample Request [id, endpoint, parameters (optional), headers (optional)]
+  Sample Request [id, endpoint, body (optional), headers (optional)]
   [
     [
       "abc123",
@@ -16,7 +16,6 @@
         "divisor": 7
       },
       {
-        "_fields": ["status",["result",["quotient"]]],
         ...
       }
     ]

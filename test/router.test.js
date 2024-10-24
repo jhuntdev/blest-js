@@ -1,8 +1,27 @@
-const chai = require('chai');
-const expect = chai.expect;
+const assert = require('assert');
 const { v4: uuidv4 } = require('uuid');
-
 const { Router } = require('../dist/router');
+
+const invalidRoutes = [
+    'a',
+    '0abc',
+    '_abc',
+    '-abc',
+    'abc_',
+    'abc-',
+    'abc/0abc',
+    'abc/_abc',
+    'abc/-abc',
+    'abc/',
+    '/abc',
+    'abc//abc',
+    'abc/a/abc',
+    'abc/0abc/abc',
+    'abc/_abc/abc',
+    'abc/-abc/abc',
+    'abc/abc_/abc',
+    'abc/abc-/abc'
+]
 
 describe('Router', async () => {
 
@@ -12,7 +31,8 @@ describe('Router', async () => {
     let testId1, testId2, testId3, testId4, testId5,
         testValue1, testValue2, testValue3, testValue4, testValue5,
         result1, result2, result3, result4, result5, result6,
-        error1, error2, error3, error4, error5, error6
+        error1, error2, error3, error4, error5, error6,
+        routeErrorCount = 0
 
     before(async () => {
 
@@ -20,13 +40,13 @@ describe('Router', async () => {
             timeout: 1000
         });
 
-        router.route('basicRoute', (parameters, context) => {
-            return { route: 'basicRoute', parameters, context };
+        router.route('basicRoute', (body, context) => {
+            return { route: 'basicRoute', body, context };
         });
 
-        router.use((parameters, context) => {
+        router.use((body, context) => {
             context.test = {
-                value: parameters.testValue
+                value: body.testValue
             };
         });
 
@@ -41,14 +61,14 @@ describe('Router', async () => {
             timeout: 10
         });
 
-        router2.route('mergedRoute', (parameters, context) => {
-            return { route: 'mergedRoute', parameters, context };
+        router2.route('mergedRoute', (body, context) => {
+            return { route: 'mergedRoute', body, context };
         });
 
-        router2.route('timeoutRoute', (parameters) => {
+        router2.route('timeoutRoute', (body) => {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    resolve({ testValue: parameters.testValue })
+                    resolve({ testValue: body.testValue })
                 }, 20);
             });
         });
@@ -57,9 +77,9 @@ describe('Router', async () => {
 
         const router3 = new Router();
 
-        router3.route('errorRoute', (parameters) => {
-            const error = new Error(parameters.testValue);
-            error.code = 'ERROR_' + Math.round(parameters.testValue * 10);
+        router3.route('errorRoute', (body) => {
+            const error = new Error(body.testValue);
+            error.code = 'ERROR_' + Math.round(body.testValue * 10);
             throw error;
         });
 
@@ -93,97 +113,89 @@ describe('Router', async () => {
         // Malformed request
         [result6, error6] = await router.handle([[testId4], {}, [true, 1.25]]);
 
+        // Invalid routes
+        const handler = () => {}
+        for (let i = 0; i < invalidRoutes.length; i++) {
+            try {
+                router.route(invalidRoutes[i], handler)
+            } catch (error) {
+                routeErrorCount++
+            }
+        }
+
     });
 
     it('should have class properties', () => {
-        expect(router instanceof Router).to.be.true;
-        expect(Object.keys(router.routes).length).to.equal(4);
-        expect(typeof router.handle).to.equal('function');
+        assert.equal(router instanceof Router, true);
+        assert.equal(Object.keys(router.routes).length, 4);
+        assert.equal(typeof router.handle, 'function');
     });
 
     it('should process all valid requests', () => {
-        expect(error1).to.be.null;
-        expect(error2).to.be.null;
-        expect(error3).to.be.null;
-        expect(error4).to.be.null;
-        expect(error5).to.be.null;
+        assert.equal(error1, null);
+        assert.equal(error2, null);
+        assert.equal(error3, null);
+        assert.equal(error4, null);
+        assert.equal(error5, null);
     });
 
     it('should return matching IDs', () => {
-        expect(result1[0][0]).to.equal(testId1);
-        expect(result2[0][0]).to.equal(testId2);
-        expect(result3[0][0]).to.equal(testId3);
-        expect(result4[0][0]).to.equal(testId4);
-        expect(result5[0][0]).to.equal(testId5);
+        assert.equal(result1[0][0], testId1);
+        assert.equal(result2[0][0], testId2);
+        assert.equal(result3[0][0], testId3);
+        assert.equal(result4[0][0], testId4);
+        assert.equal(result5[0][0], testId5);
     });
 
     it('should return matching routes', () => {
-        expect(result1[0][1]).to.equal('basicRoute');
-        expect(result2[0][1]).to.equal('mergedRoute');
-        expect(result3[0][1]).to.equal('subRoutes/errorRoute');
-        expect(result4[0][1]).to.equal('missingRoute');
-        expect(result5[0][1]).to.equal('timeoutRoute');
+        assert.equal(result1[0][1], 'basicRoute');
+        assert.equal(result2[0][1], 'mergedRoute');
+        assert.equal(result3[0][1], 'subRoutes/errorRoute');
+        assert.equal(result4[0][1], 'missingRoute');
+        assert.equal(result5[0][1], 'timeoutRoute');
     });
 
-    it('should accept parameters', () => {
-        expect(Number(result1[0][2].parameters.testValue)).to.equal(testValue1);
-        expect(Number(result2[0][2].parameters.testValue)).to.equal(testValue2);
+    it('should accept body', () => {
+        assert.equal(Number(result1[0][2].body.testValue), testValue1);
+        assert.equal(Number(result2[0][2].body.testValue), testValue2);
     });
 
     it('should respect context', () => {
-        expect(Number(result1[0][2].context.testValue)).to.equal(testValue1);
-        expect(Number(result2[0][2].context.testValue)).to.equal(testValue2);
+        assert.equal(Number(result1[0][2].context.testValue), testValue1);
+        assert.equal(Number(result2[0][2].context.testValue), testValue2);
     });
 
     it('should support middleware', () => {
-        expect(result1[0][2].context.test).to.be.undefined;
-        expect(Number(result2[0][2].context.test.value)).to.equal(testValue2);
+        assert.equal(result1[0][2].context.test, undefined);
+        assert.equal(Number(result2[0][2].context.test.value), testValue2);
     });
 
     it('should handle errors correctly', () => {
-        expect(result1[0][3]).to.be.null;
-        expect(result2[0][3]).to.be.null;
-        expect(Number(result3[0][3].message)).to.equal(testValue3);
-        expect(Number(result3[0][3].status)).to.equal(500);
-        expect(result3[0][3].code).to.equal('ERROR_' + Math.round(testValue3 * 10));
-        expect(result4[0][3].message).to.equal('Not Found');
-        expect(result4[0][3].status).to.equal(404);
+        assert.equal(result1[0][3], null);
+        assert.equal(result2[0][3], null);
+        assert.equal(Number(result3[0][3].message), testValue3);
+        assert.equal(Number(result3[0][3].status), 500);
+        assert.equal(result3[0][3].code, 'ERROR_' + Math.round(testValue3 * 10));
+        assert.equal(result4[0][3].message, 'Not Found');
+        assert.equal(result4[0][3].status, 404);
     });
 
     it('should support timeout setting', () => {
-        expect(result5[0][2]).to.be.null;
-        expect(result5[0][3].message).to.equal('Internal Server Error');
-        expect(result5[0][3].status).to.equal(500);
+        assert.equal(result5[0][2], null);
+        assert.equal(result5[0][3].message, 'Internal Server Error');
+        assert.equal(result5[0][3].status, 500);
     });
 
     it('should reject malformed requests', () => {
-        expect(error6.message).to.not.be.null;
+        assert.notEqual(error6.message, null);
     });
 
     it('should allow trailing middleware', () => {
-        expect(benchmarks.length).to.equal(1);
+        assert.equal(benchmarks.length, 1);
     });
 
     it('should throw an error for invalid routes', () => {
-        const handler = () => {}
-        expect(() => router.route('a', handler)).to.throw();
-        expect(() => router.route('0abc', handler)).to.throw();
-        expect(() => router.route('_abc', handler)).to.throw();
-        expect(() => router.route('-abc', handler)).to.throw();
-        expect(() => router.route('abc_', handler)).to.throw();
-        expect(() => router.route('abc-', handler)).to.throw();
-        expect(() => router.route('abc/0abc', handler)).to.throw();
-        expect(() => router.route('abc/_abc', handler)).to.throw();
-        expect(() => router.route('abc/-abc', handler)).to.throw();
-        expect(() => router.route('abc/', handler)).to.throw();
-        expect(() => router.route('/abc', handler)).to.throw();
-        expect(() => router.route('abc//abc', handler)).to.throw();
-        expect(() => router.route('abc/a/abc', handler)).to.throw();
-        expect(() => router.route('abc/0abc/abc', handler)).to.throw();
-        expect(() => router.route('abc/_abc/abc', handler)).to.throw();
-        expect(() => router.route('abc/-abc/abc', handler)).to.throw();
-        expect(() => router.route('abc/abc_/abc', handler)).to.throw();
-        expect(() => router.route('abc/abc-/abc', handler)).to.throw();
+        assert.equal(invalidRoutes.length, routeErrorCount);
     })
 
 });

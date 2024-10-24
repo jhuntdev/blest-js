@@ -70,8 +70,7 @@ class Router {
         this.routes[route] = {
             handler: [...this.middleware, ...handlers, ...this.afterware],
             description: null,
-            parameters: null,
-            result: null,
+            schema: null,
             visible: this.introspection,
             validate: false,
             timeout: this.timeout
@@ -93,17 +92,11 @@ class Router {
             }
             this.routes[route].description = config.description;
         }
-        if (config.parameters !== undefined) {
-            if (config.parameters && typeof config.parameters !== 'object') {
-                throw new Error('Parameters should be a JSON schema');
+        if (config.schema !== undefined) {
+            if (config.schema && typeof config.schema !== 'object') {
+                throw new Error('Schema should be a JSON schema');
             }
-            this.routes[route].parameters = config.parameters;
-        }
-        if (config.result !== undefined) {
-            if (config.result && typeof config.result !== 'object') {
-                throw new Error('Result should be a JSON schema');
-            }
-            this.routes[route].result = config.result;
+            this.routes[route].schema = config.schema;
         }
         if (config.visible !== undefined) {
             if ([true, false].indexOf(config.visible) > -1) {

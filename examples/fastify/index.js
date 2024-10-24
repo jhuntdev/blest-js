@@ -17,7 +17,7 @@ router.route('hello', () => {
   }
 });
 
-const authMiddleware = (params, context) => {
+const authMiddleware = (body, context) => {
   if (context.headers?.auth === 'myToken') {
     return;
   } else {
@@ -25,9 +25,9 @@ const authMiddleware = (params, context) => {
   }
 };
 
-router.route('greet', authMiddleware, (params, context) => {
+router.route('greet', authMiddleware, (body, context) => {
   return {
-    greeting: `Hi, ${params.name}!`
+    greeting: `Hi, ${body.name}!`
   }
 });
 

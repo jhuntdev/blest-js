@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Router, RouterOptions } from './router';
 import { ServerOptions } from './server';
 import { HttpClient } from './client';
@@ -16,9 +15,9 @@ declare class BlestApp extends Router {
 declare const defaultExport: {
     (options?: BlestAppOptions): BlestApp;
     Router: typeof Router;
-    createHttpServer: (requestHandler: (requests: any, context: any) => Promise<[any, any]>, options?: ServerOptions | undefined) => import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
+    createHttpServer: (requestHandler: (requests: any, context: any) => Promise<[any, any]>, options?: ServerOptions) => import("http").Server;
     HttpClient: typeof HttpClient;
-    createHttpClient: (url: string, options?: import("./client").ClientOptions | undefined) => (route: string, params: object | null, selector: any[] | null) => Promise<unknown>;
+    createHttpClient: (url: string, options?: import("./client").ClientOptions) => (route: string, body: object | null, headers: object | null) => Promise<unknown>;
     createRequestHandler: (routes: {
         [key: string]: any;
     }) => (requests: any[], context?: {
