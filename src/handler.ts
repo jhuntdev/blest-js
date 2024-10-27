@@ -1,4 +1,5 @@
 import { validateRoute } from './utilities';
+import { v1 as uuid } from 'uuid';
 
 export const createRequestHandler = (routes: { [key: string]: any }) => {
 
@@ -72,6 +73,7 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
     return handleError(400, 'Request body should be a JSON array');
   }
 
+  const batchId = uuid();
   const uniqueIds: string[] = [];
   const promises: Promise<any>[] = [];
 
@@ -115,10 +117,10 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
 
     const requestContext = {
       ...context,
-      id,
+      batchId,
+      requestId: id,
       route,
-      headers,
-      time: Date.now()
+      headers
     };
 
     promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute?.timeout)); 

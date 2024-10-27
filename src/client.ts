@@ -1,6 +1,6 @@
 import http from 'http';
 import events from 'events';
-import { v4 as uuidv4 } from 'uuid';
+import { v1 as uuid } from 'uuid';
 
 export interface ClientOptions {
     httpHeaders?: any
@@ -64,7 +64,7 @@ export class HttpClient {
             } else if (headers && typeof headers !== 'object') {
                 return reject(new Error('Headers should be an object'));
             }
-            const id = uuidv4();
+            const id = uuid();
             this.emitter.once(id, (result: any, error: any) => {
                 if (error) {
                     reject(error);
@@ -205,7 +205,7 @@ export const createHttpClient = (url: string, options?: ClientOptions) => {
             } else if (headers && typeof headers !== 'object') {
                 return reject(new Error('Headers should be an object'));
             }
-            const id = uuidv4();
+            const id = uuid();
             emitter.once(id, (result: any, error: any) => {
                 if (error) {
                     reject(error);
