@@ -11,7 +11,7 @@ For a front-end implementation in React, please visit https://github.com/jhuntde
 - Built on JSON - Reduce parsing time and overhead
 - Request Batching - Save bandwidth and reduce load times
 - Compact Payloads - Save even more bandwidth
-- Single Endpoint - Reduce complexity
+- Single Endpoint - Reduce complexity and facilitate introspection
 - Fully Encrypted - Improve data privacy
 
 ## Installation

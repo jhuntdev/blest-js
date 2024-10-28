@@ -61,7 +61,7 @@ class HttpClient {
             else if (headers && typeof headers !== 'object') {
                 return reject(new Error('Headers should be an object'));
             }
-            const id = (0, uuid_1.v4)();
+            const id = (0, uuid_1.v1)();
             this.emitter.once(id, (result, error) => {
                 if (error) {
                     reject(error);
@@ -193,7 +193,7 @@ const createHttpClient = (url, options) => {
             else if (headers && typeof headers !== 'object') {
                 return reject(new Error('Headers should be an object'));
             }
-            const id = (0, uuid_1.v4)();
+            const id = (0, uuid_1.v1)();
             emitter.once(id, (result, error) => {
                 if (error) {
                     reject(error);

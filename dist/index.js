@@ -16,7 +16,7 @@
         "divisor": 7
       },
       {
-        ...
+        "auth": "myToken"
       }
     ]
   ]

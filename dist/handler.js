@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRequest = exports.createRequestHandler = void 0;
 const utilities_1 = require("./utilities");
+const uuid_1 = require("uuid");
 const createRequestHandler = (routes) => {
     if (!routes || typeof routes !== 'object') {
         throw new Error('A routes object is required');
@@ -72,6 +73,7 @@ const handleRequest = async (routes, requests, context = {}) => {
     else if (!requests || typeof requests !== 'object' || !Array.isArray(requests)) {
         return handleError(400, 'Request body should be a JSON array');
     }
+    const batchId = (0, uuid_1.v1)();
     const uniqueIds = [];
     const promises = [];
     for (let i = 0; i < requests.length; i++) {
@@ -108,8 +110,10 @@ const handleRequest = async (routes, requests, context = {}) => {
         };
         const requestContext = {
             ...context,
-            request: requestObject,
-            time: Date.now()
+            batchId,
+            requestId: id,
+            route,
+            headers
         };
         promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
     }
