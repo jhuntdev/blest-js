@@ -26,16 +26,32 @@
   "directories": {
     "examples": "examples"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./router": {
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.js",
+      "require": "./dist/cjs/router.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/cjs/client.js"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "watch": "tsc -w",
     "test": "mocha"
   },
   "author": "JHunt <hello@jhunt.dev>",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.21",
-    "uuid": "^9.0.0"
+    "uuid": "^11.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.7.9",

@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------------------------------------
   BLEST (Batch-able, Lightweight, Encrypted State Transfer) - A modern alternative to REST
-  (c) 2023 JHunt <hello@jhunt.dev>
+  (c) 2023-2024 JHunt <hello@jhunt.dev>
   License: MIT
   -------------------------------------------------------------------------------------------------
   Sample Request [id, endpoint, body (optional), headers (optional)]
@@ -39,45 +39,16 @@
   -------------------------------------------------------------------------------------------------
 */
 
-import { Router, RouterOptions } from './router';
-import { createRequestHandler, handleRequest } from './handler';
-import { createHttpServer, ServerOptions } from './server';
-import { HttpClient, createHttpClient } from './client'
+import { Router } from './router';
+import { HttpClient } from './client'
 
 export { Router, RouterOptions } from './router';
-export { createHttpServer, ServerOptions } from './server';
-export { HttpClient, createHttpClient, ClientOptions } from './client';
-export { createRequestHandler } from './handler';
+export { HttpClient, ClientOptions } from './client';
 
-interface BlestAppOptions extends RouterOptions, ServerOptions {}
-
-class BlestApp extends Router {
-
-  options: BlestAppOptions;
-
-  constructor(options?: BlestAppOptions) {
-    super(options);
-    this.options = options || {};
-  }
-
-  public listen(...args: any[]) {
-    const routes = this.routes;
-    const options = this.options;
-    const server = createHttpServer(handleRequest.bind(null, routes), options);
-    server.listen(...args);
-  }
-
-}
-
-const defaultExport = (options?: BlestAppOptions) => {
-  return new BlestApp(options);
+const defaultExport = {
+  Router,
+  HttpClient
 };
-
-defaultExport.Router = Router;
-defaultExport.createHttpServer = createHttpServer;
-defaultExport.HttpClient = HttpClient;
-defaultExport.createHttpClient = createHttpClient;
-defaultExport.createRequestHandler = createRequestHandler;
 
 module.exports = defaultExport;
 

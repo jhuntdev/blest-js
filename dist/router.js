@@ -132,11 +132,7 @@ class Router {
                 throw new Error('Cannot merge duplicate routes: ' + route);
             }
             else {
-                this.routes[route] = {
-                    ...router.routes[route],
-                    handler: [...this.middleware, ...router.routes[route].handler, ...this.afterware],
-                    timeout: router.routes[route].timeout || this.timeout
-                };
+                this.routes[route] = Object.assign(Object.assign({}, router.routes[route]), { handler: [...this.middleware, ...router.routes[route].handler, ...this.afterware], timeout: router.routes[route].timeout || this.timeout });
             }
         }
     }
@@ -160,11 +156,7 @@ class Router {
                 throw new Error('Cannot merge duplicate routes: ' + nsRoute);
             }
             else {
-                this.routes[nsRoute] = {
-                    ...router.routes[route],
-                    handler: [...this.middleware, ...router.routes[route].handler, ...this.afterware],
-                    timeout: router.routes[route].timeout || this.timeout
-                };
+                this.routes[nsRoute] = Object.assign(Object.assign({}, router.routes[route]), { handler: [...this.middleware, ...router.routes[route].handler, ...this.afterware], timeout: router.routes[route].timeout || this.timeout });
             }
         }
     }

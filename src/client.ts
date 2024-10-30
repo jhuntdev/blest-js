@@ -1,6 +1,5 @@
-import http from 'http';
-import events from 'events';
 import { v1 as uuid } from 'uuid';
+import EventEmitter from './events';
 
 export interface ClientOptions {
     httpHeaders?: any
@@ -16,7 +15,7 @@ export class HttpClient {
     private bufferDelay = 10;
     private queue: any[] = [];
     private timeout: NodeJS.Timeout | null = null;
-    private emitter = new events.EventEmitter();
+    private emitter = new EventEmitter();
 
     constructor(url: string, options?: ClientOptions) {
         this.url = url;
@@ -80,48 +79,26 @@ export class HttpClient {
     }
 };
 
+const httpPostRequest = async (url: string, data: any, httpHeaders: any = {}): Promise<any> => {
+    const requestData = JSON.stringify(data);
+    
+    const options: RequestInit = {
+        method: 'POST',
+        body: requestData,
+        mode: 'cors',
+        headers: {
+            ...httpHeaders,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    const response: Response = await fetch(url, options);
 
-
-function httpPostRequest(url: string, data: any, httpHeaders: any = {}): Promise<any> {
-    return new Promise((resolve, reject) => {
-        const requestData = JSON.stringify(data);
-        
-        const options: http.RequestOptions = {
-            method: 'POST',
-            headers: {
-                ...httpHeaders,
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(requestData)
-            }
-        };
-        
-        const request = http.request(url, options, (response: http.IncomingMessage) => {
-            let responseBody = '';
-            
-            response.on('data', (chunk: string) => {
-            responseBody += chunk;
-            });
-            
-            response.on('end', () => {
-            if (response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
-                const responseData = JSON.parse(responseBody);
-                resolve(responseData);
-            } else {
-                reject(new Error(`HTTP POST request failed with status code ${response.statusCode}`));
-            }
-            });
-        });
-        
-        request.on('error', (error: Error) => {
-            reject(error);
-        });
-        
-        request.write(requestData);
-        request.end();
-    });
+    if (!response.ok) throw new Error(`HTTP POST request failed with status code ${response.status}`);
+    
+    return await response.json();
 };
-
-
 
 const validateClientOptions = (options: ClientOptions) => {
     if (!options) {
@@ -150,77 +127,4 @@ const validateClientOptions = (options: ClientOptions) => {
         }
     }
     return false;
-};
-
-
-
-export const createHttpClient = (url: string, options?: ClientOptions) => {
-
-    console.warn('createHttpClient is deprecated - use the HttpClient class instead')
-    
-    if (options) {
-        const optionsError = validateClientOptions(options);
-        if (optionsError) {
-            throw new Error(optionsError);
-        }
-    }
-
-    const httpHeaders = options?.httpHeaders || null;
-    const maxBatchSize = options?.maxBatchSize || 100;
-    const bufferDelay = options?.bufferDelay || 10;
-    let queue: any[] = [];
-    let timeout: NodeJS.Timeout | null = null;
-    const emitter = new events.EventEmitter();
-
-    const process = () => {
-        const newQueue = queue.splice(0, maxBatchSize);
-        clearTimeout(timeout!);
-        if (!queue.length) {
-            timeout = null;
-        } else {
-            timeout = setTimeout(() => {
-                process();
-            }, bufferDelay);
-        }
-        
-        httpPostRequest(url, newQueue, httpHeaders)
-        .then(async (data: any) => {
-            data.forEach((r: any) => {
-                emitter.emit(r[0], r[2], r[3]);
-            });
-        })
-        .catch((error: any) => {
-            newQueue.forEach((q) => {
-                emitter.emit(q[0], null, error);
-            });
-        });
-    };
-
-    const request = (route: string, body: object | null, headers: object | null) => {
-        return new Promise((resolve, reject) => {
-            if (!route) {
-                return reject(new Error('Route is required'));
-            } else if (body && typeof body !== 'object') {
-                return reject(new Error('Body should be an object'));
-            } else if (headers && typeof headers !== 'object') {
-                return reject(new Error('Headers should be an object'));
-            }
-            const id = uuid();
-            emitter.once(id, (result: any, error: any) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-            queue.push([id, route, body || null, headers || null]);
-            if (!timeout) {
-                timeout = setTimeout(() => {
-                    process();
-                }, 1);
-            }
-        });
-    };
-
-    return request;
 };

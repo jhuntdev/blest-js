@@ -29,10 +29,9 @@ yarn add blest-js
 
 ## Usage
 
-The default export of this library has an interface similar to Express or Connect. It also provides a `Router` class with a `handle` method for use in an existing NodeJS application and an `HttpClient` class with a `request` method for making BLEST HTTP requests.
+<!-- The default export of this library has an interface similar to Express or Connect. It also provides a `Router` class with a `handle` method for use in an existing NodeJS application and an `HttpClient` class with a `request` method for making BLEST HTTP requests.
 
 ```javascript
-const express = require('express');
 const blest = require('blest-js');
 
 const app = blest({
@@ -71,7 +70,7 @@ app.route('greet', greetController);
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
-```
+``` -->
 
 ### Router
 

@@ -15,4 +15,3 @@ export declare class HttpClient {
     private process;
     request(route: string, body: object | null, headers: object | null): Promise<unknown>;
 }
-export declare const createHttpClient: (url: string, options?: ClientOptions) => (route: string, body: object | null, headers: object | null) => Promise<unknown>;

@@ -1,6 +1,6 @@
 const assert = require('assert');
-const { v4: uuidv4 } = require('uuid');
-const { Router } = require('../dist/router');
+const { v4: uuidv1 } = require('uuid');
+const { Router } = require('../dist/cjs/router');
 
 const invalidRoutes = [
     'a',
@@ -54,7 +54,6 @@ describe('Router', async () => {
             const completeTime = Date.now();
             const difference = completeTime - context.requestTime;
             benchmarks.push(difference);
-            console.log(error);
         })
 
         const router2 = new Router({
@@ -86,27 +85,27 @@ describe('Router', async () => {
         router.namespace('subRoutes', router3);
 
         // Basic route
-        testId1 = uuidv4();
+        testId1 = uuidv1();
         testValue1 = Math.random();
         [result1, error1] = await router.handle([[testId1, 'basicRoute', { testValue: testValue1 }]], { testValue: testValue1 });
 
         // Merged route
-        testId2 = uuidv4();
+        testId2 = uuidv1();
         testValue2 = Math.random();
         [result2, error2] = await router.handle([[testId2, 'mergedRoute', { testValue: testValue2 }]], { testValue: testValue2 });
     
         // Error route
-        testId3 = uuidv4();
+        testId3 = uuidv1();
         testValue3 = Math.random();
         [result3, error3] = await router.handle([[testId3, 'subRoutes/errorRoute', { testValue: testValue3 }]], { testValue: testValue3 });
 
         // Missing route
-        testId4 = uuidv4();
+        testId4 = uuidv1();
         testValue4 = Math.random();
         [result4, error4] = await router.handle([[testId4, 'missingRoute', { testValue: testValue4 }]], { testValue: testValue4 });
 
         // Timeout route
-        testId5 = uuidv4();
+        testId5 = uuidv1();
         testValue5 = Math.random();
         [result5, error5] = await router.handle([[testId5, 'timeoutRoute', { testValue: testValue5 }]], { testValue: testValue5 });
 

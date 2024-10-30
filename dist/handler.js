@@ -1,72 +1,17 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleRequest = exports.createRequestHandler = void 0;
-const utilities_1 = require("./utilities");
-const uuid_1 = require("uuid");
-const createRequestHandler = (routes) => {
-    if (!routes || typeof routes !== 'object') {
-        throw new Error('A routes object is required');
-    }
-    const routeKeys = Object.keys(routes);
-    const myRoutes = {};
-    for (let i = 0; i < routeKeys.length; i++) {
-        const key = routeKeys[i];
-        const routeError = (0, utilities_1.validateRoute)(key);
-        if (routeError) {
-            throw new Error(routeError + ': ' + key);
-        }
-        const route = routes[key];
-        if (Array.isArray(route)) {
-            if (!route.length) {
-                throw new Error('Route has no handlers: ' + key);
-            }
-            for (let j = 0; j < route.length; j++) {
-                if (typeof route[j] !== 'function') {
-                    throw new Error('All route handlers must be functions: ' + key);
-                }
-            }
-            myRoutes[key] = {
-                handler: route
-            };
-        }
-        else if (typeof route === 'object') {
-            if (!(route === null || route === void 0 ? void 0 : route.handler)) {
-                throw new Error('Route has no handlers: ' + key);
-            }
-            else if (!Array.isArray(route.handler)) {
-                if (typeof route.handler !== 'function') {
-                    throw new Error('Route handler is not valid: ' + key);
-                }
-                myRoutes[key] = {
-                    ...route,
-                    handler: [route.handler]
-                };
-            }
-            else {
-                for (let j = 0; j < route.length; j++) {
-                    if (typeof route[j] !== 'function') {
-                        throw new Error('All route handlers must be functions: ' + key);
-                    }
-                }
-                myRoutes[key] = { ...route };
-            }
-        }
-        else if (typeof route === 'function') {
-            myRoutes[key] = {
-                handler: [route]
-            };
-        }
-        else {
-            throw new Error('Route is missing handler: ' + key);
-        }
-    }
-    const handler = async (requests, context = {}) => {
-        return (0, exports.handleRequest)(myRoutes, requests, context);
-    };
-    return handler;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
-exports.createRequestHandler = createRequestHandler;
-const handleRequest = async (routes, requests, context = {}) => {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handleRequest = void 0;
+const uuid_1 = require("uuid");
+const handleRequest = (routes_1, requests_1, ...args_1) => __awaiter(void 0, [routes_1, requests_1, ...args_1], void 0, function* (routes, requests, context = {}) {
     if (!routes) {
         throw new Error('Routes are required');
     }
@@ -108,18 +53,13 @@ const handleRequest = async (routes, requests, context = {}) => {
             body,
             headers
         };
-        const requestContext = {
-            ...context,
-            batchId,
-            requestId: id,
-            route,
-            headers
-        };
+        const requestContext = Object.assign(Object.assign({}, context), { batchId, requestId: id, route,
+            headers });
         promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
     }
-    const results = await Promise.all(promises);
+    const results = yield Promise.all(promises);
     return handleResult(results);
-};
+});
 exports.handleRequest = handleRequest;
 const handleResult = (result) => {
     return [result, null];
@@ -130,8 +70,8 @@ const handleError = (status, message) => {
 const routeNotFound = () => {
     throw { message: 'Not Found', status: 404 };
 };
-const routeReducer = async (handler, request, context, timeout) => {
-    return new Promise(async (resolve, reject) => {
+const routeReducer = (handler, request, context, timeout) => __awaiter(void 0, void 0, void 0, function* () {
+    return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         let timer;
         let timedOut = false;
         const { id, route, body } = request;
@@ -156,10 +96,10 @@ const routeReducer = async (handler, request, context, timeout) => {
                     let tempResult;
                     try {
                         if (error) {
-                            tempResult = await handler[i](safeBody, safeContext, error);
+                            tempResult = yield handler[i](safeBody, safeContext, error);
                         }
                         else {
-                            tempResult = await handler[i](safeBody, safeContext);
+                            tempResult = yield handler[i](safeBody, safeContext);
                         }
                     }
                     catch (tempErr) {
@@ -180,7 +120,7 @@ const routeReducer = async (handler, request, context, timeout) => {
             }
             else {
                 console.warn(`Non-array route handlers are deprecated: ${route}`);
-                result = await handler(safeBody, safeContext);
+                result = yield handler(safeBody, safeContext);
             }
             if (timer) {
                 clearTimeout(timer);
@@ -208,8 +148,8 @@ const routeReducer = async (handler, request, context, timeout) => {
             const responseError = assembleError(error);
             resolve([id, route, null, responseError]);
         }
-    });
-};
+    }));
+});
 const assembleError = (error) => {
     const responseError = {
         message: error.message || 'Internal Server Error',
