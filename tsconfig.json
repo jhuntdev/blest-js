@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "target": "es2015",
-        "module": "commonjs",
-        "lib": ["es2018"],
+        "module": "umd",
+        "lib": ["es2015"],
         "outDir": "dist",
         "declaration": true,
         "declarationDir": "dist",
@@ -10,7 +10,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "moduleResolution": "node",
-        "resolveJsonModule": true,
+        "removeComments": true,
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,

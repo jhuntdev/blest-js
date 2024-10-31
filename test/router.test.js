@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { v4: uuidv1 } = require('uuid');
-const { Router } = require('../dist/cjs/router');
+const { Router } = require('../dist/router');
 
 const invalidRoutes = [
     'a',
