@@ -1,6 +1,10 @@
 import { v1 as uuid } from 'uuid';
 
-export const handleRequest = async (routes: { [key: string]: any }, requests: any[], context: { [key: string]: any } = {}): Promise<RequestResult> => {
+export interface RequestHandlerOptions {
+  debug?: boolean
+}
+
+export const handleRequest = async (routes: { [key: string]: any }, requests: any[], context: { [key: string]: any } = {}, options: RequestHandlerOptions = {}): Promise<RequestResult> => {
 
   if (!routes) {
     throw new Error('Routes are required');
@@ -58,7 +62,7 @@ export const handleRequest = async (routes: { [key: string]: any }, requests: an
       headers
     };
 
-    promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute?.timeout)); 
+    promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute?.timeout, options?.debug)); 
     
   }
 
@@ -94,10 +98,11 @@ interface RequestContext {
 }
 
 const routeReducer = async (
-  handler: ((body: any, context: RequestContext, error?: any) => any) | ((body: any, context: RequestContext, error?: any) => any)[],
+  handler: ((body: any, context: RequestContext, error?: any) => any) | ((body: any, context: RequestContext, error?: any, debug?: boolean) => any)[],
   request: RequestObject,
   context?: RequestContext,
-  timeout?: number
+  timeout?: number,
+  debug?: boolean
 ): Promise<[string, string, any | null, { message: string, status?: number, code?: string, stack?: string } | null]> => {
   return new Promise(async (resolve, reject) => {
     let timer;
@@ -151,7 +156,7 @@ const routeReducer = async (
         return reject();
       }
       if (error) {
-        const responseError = assembleError(error);
+        const responseError = assembleError(error, debug);
         return resolve([id, route, null, responseError]);
       }
       if (result && (typeof result !== 'object' || Array.isArray(result))) {
@@ -172,7 +177,7 @@ const routeReducer = async (
   })
 };
 
-const assembleError = (error:any) => {
+const assembleError = (error:any, debug?:boolean) => {
   const responseError:any = {
     message: error.message || 'Internal Server Error',
     status: error.status || 500
@@ -183,7 +188,7 @@ const assembleError = (error:any) => {
   if (error.data) {
     responseError.data = error.data;
   }
-  if (process.env.NODE_ENV !== 'production' && error.stack) {
+  if (debug && error.stack) {
     responseError.stack = error.stack;
   }
   return responseError;

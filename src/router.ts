@@ -1,5 +1,5 @@
 import { validateRoute } from './utilities';
-import { handleRequest } from './handler';
+import { handleRequest, RequestHandlerOptions } from './handler';
 
 export interface RouterOptions {
   introspection?: boolean
@@ -194,8 +194,8 @@ export class Router {
 
   }
 
-  public handle(requests: any[], context: { [key: string]: any } = {}) {
-    return handleRequest(this.routes, requests, context);
+  public handle(requests: any[], context: { [key: string]: any } = {}, options?: RequestHandlerOptions) {
+    return handleRequest(this.routes, requests, context, options);
   }
 
 }

@@ -14,7 +14,7 @@ export class HttpClient {
     private maxBatchSize = 25;
     private bufferDelay = 10;
     private queue: any[] = [];
-    private timeout: NodeJS.Timeout | null = null;
+    private timeout: ReturnType<typeof setTimeout> | null = null;
     private emitter = new EventEmitter();
 
     constructor(url: string, options?: ClientOptions) {

@@ -20,7 +20,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.handleRequest = void 0;
     const uuid_1 = require("uuid");
-    const handleRequest = (routes_1, requests_1, ...args_1) => __awaiter(void 0, [routes_1, requests_1, ...args_1], void 0, function* (routes, requests, context = {}) {
+    const handleRequest = (routes_1, requests_1, ...args_1) => __awaiter(void 0, [routes_1, requests_1, ...args_1], void 0, function* (routes, requests, context = {}, options = {}) {
         if (!routes) {
             throw new Error('Routes are required');
         }
@@ -64,7 +64,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             };
             const requestContext = Object.assign(Object.assign({}, context), { batchId, requestId: id, route,
                 headers });
-            promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout));
+            promises.push(routeReducer(routeHandler, requestObject, requestContext, thisRoute === null || thisRoute === void 0 ? void 0 : thisRoute.timeout, options === null || options === void 0 ? void 0 : options.debug));
         }
         const results = yield Promise.all(promises);
         return handleResult(results);
@@ -79,7 +79,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     const routeNotFound = () => {
         throw { message: 'Not Found', status: 404 };
     };
-    const routeReducer = (handler, request, context, timeout) => __awaiter(void 0, void 0, void 0, function* () {
+    const routeReducer = (handler, request, context, timeout, debug) => __awaiter(void 0, void 0, void 0, function* () {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
             let timer;
             let timedOut = false;
@@ -138,7 +138,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     return reject();
                 }
                 if (error) {
-                    const responseError = assembleError(error);
+                    const responseError = assembleError(error, debug);
                     return resolve([id, route, null, responseError]);
                 }
                 if (result && (typeof result !== 'object' || Array.isArray(result))) {
@@ -156,7 +156,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
         }));
     });
-    const assembleError = (error) => {
+    const assembleError = (error, debug) => {
         const responseError = {
             message: error.message || 'Internal Server Error',
             status: error.status || 500
@@ -167,7 +167,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         if (error.data) {
             responseError.data = error.data;
         }
-        if (process.env.NODE_ENV !== 'production' && error.stack) {
+        if (debug && error.stack) {
             responseError.stack = error.stack;
         }
         return responseError;

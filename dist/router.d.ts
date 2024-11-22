@@ -1,3 +1,4 @@
+import { RequestHandlerOptions } from './handler';
 export interface RouterOptions {
     introspection?: boolean;
     timeout?: number;
@@ -16,5 +17,5 @@ export declare class Router {
     namespace(prefix: string, router: Router): void;
     handle(requests: any[], context?: {
         [key: string]: any;
-    }): Promise<[any, any]>;
+    }, options?: RequestHandlerOptions): Promise<[any, any]>;
 }

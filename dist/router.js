@@ -169,8 +169,8 @@
                 }
             }
         }
-        handle(requests, context = {}) {
-            return (0, handler_1.handleRequest)(this.routes, requests, context);
+        handle(requests, context = {}, options) {
+            return (0, handler_1.handleRequest)(this.routes, requests, context, options);
         }
     }
     exports.Router = Router;

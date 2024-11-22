@@ -1,0 +1,29 @@
+{
+  "version": "4",
+  "specifiers": {
+    "jsr:@hono/hono@^4.6.11": "4.6.11",
+    "npm:blest-js@*": "1.0.1"
+  },
+  "jsr": {
+    "@hono/hono@4.6.11": {
+      "integrity": "07399d911f09e94b7dc1e0e0a0577d35fe66578af20163d513958364c4e9e702"
+    }
+  },
+  "npm": {
+    "blest-js@1.0.1": {
+      "integrity": "sha512-f3VjowH5Dy7RBIkvNs+357aSqLmOJFU8T2a/AjvRGGe7Nzm+cK6zdCXarBnO2RYvAPei8cJ41+IGc3NYnHpglA==",
+      "dependencies": [
+        "uuid"
+      ]
+    },
+    "uuid@11.0.3": {
+      "integrity": "sha512-d0z310fCWv5dJwnX1Y/MncBAqGMKEzlBb1AOf7z9K8ALnd0utBX/msg/fA0+sbyN1ihbMsLhrBlnl1ak7Wa0rg=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@hono/hono@^4.6.11",
+      "npm:blest-js@^1.0.1"
+    ]
+  }
+}
