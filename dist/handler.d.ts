@@ -1,5 +1,6 @@
 export interface RequestHandlerOptions {
     debug?: boolean;
+    idGenerator?: () => string;
 }
 export declare const handleRequest: (routes: {
     [key: string]: any;

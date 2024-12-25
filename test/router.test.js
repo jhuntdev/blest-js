@@ -1,6 +1,5 @@
 const assert = require('assert');
-const { v4: uuidv1 } = require('uuid');
-const { Router } = require('../dist/router');
+const { Router } = require('../dist/index.cjs');
 
 const invalidRoutes = [
     'a',
@@ -37,7 +36,7 @@ describe('Router', async () => {
     before(async () => {
 
         router = new Router({
-            timeout: 1000
+            timeout: 5
         });
 
         router.route('basicRoute', (body, context) => {
@@ -45,14 +44,14 @@ describe('Router', async () => {
         });
 
         router.use((body, context) => {
-            context.test = {
-                value: body.testValue
-            };
+            context.test = { value: body.testValue };
         });
 
-        router.use((_, context, error) => {
-            const completeTime = Date.now();
-            const difference = completeTime - context.requestTime;
+        router.use(async (_, context, next) => {
+            const startTime = Date.now();
+            await next();
+            const endTime = Date.now();
+            const difference = endTime - startTime;
             benchmarks.push(difference);
         })
 
@@ -68,7 +67,7 @@ describe('Router', async () => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ testValue: body.testValue })
-                }, 20);
+                }, 10);
             });
         });
 
@@ -85,27 +84,27 @@ describe('Router', async () => {
         router.namespace('subRoutes', router3);
 
         // Basic route
-        testId1 = uuidv1();
+        testId1 = 'a1';
         testValue1 = Math.random();
         [result1, error1] = await router.handle([[testId1, 'basicRoute', { testValue: testValue1 }]], { testValue: testValue1 });
 
         // Merged route
-        testId2 = uuidv1();
+        testId2 = 'b2';
         testValue2 = Math.random();
         [result2, error2] = await router.handle([[testId2, 'mergedRoute', { testValue: testValue2 }]], { testValue: testValue2 });
-    
+
         // Error route
-        testId3 = uuidv1();
+        testId3 = 'c3';
         testValue3 = Math.random();
         [result3, error3] = await router.handle([[testId3, 'subRoutes/errorRoute', { testValue: testValue3 }]], { testValue: testValue3 });
 
         // Missing route
-        testId4 = uuidv1();
+        testId4 = 'd4';
         testValue4 = Math.random();
         [result4, error4] = await router.handle([[testId4, 'missingRoute', { testValue: testValue4 }]], { testValue: testValue4 });
 
         // Timeout route
-        testId5 = uuidv1();
+        testId5 = 'e5';
         testValue5 = Math.random();
         [result5, error5] = await router.handle([[testId5, 'timeoutRoute', { testValue: testValue5 }]], { testValue: testValue5 });
 
@@ -189,8 +188,8 @@ describe('Router', async () => {
         assert.notEqual(error6.message, null);
     });
 
-    it('should allow trailing middleware', () => {
-        assert.equal(benchmarks.length, 1);
+    it('should provide reliable next function', () => {
+        assert.equal(benchmarks.length, 2);
     });
 
     it('should throw an error for invalid routes', () => {

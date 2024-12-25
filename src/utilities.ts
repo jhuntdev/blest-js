@@ -1,6 +1,13 @@
 export const routeRegex = /^[a-zA-Z][a-zA-Z0-9_\-\/]*[a-zA-Z0-9]$/;
 export const systemRouteRegex = /^_[a-zA-Z][a-zA-Z0-9_\-\/]*[a-zA-Z0-9]$/;
 
+export const idGenerator = (length: number = 8): string => {
+  const max = Math.pow(16, length) - 1;
+  const randomNumber = Math.floor(Math.random() * (max + 1));
+  const id = randomNumber.toString(16).padStart(length, '0');
+  return id;
+}
+
 export const validateRoute = (route: string, system: boolean = false) => {
   if (!route) {
     return 'Route is required';

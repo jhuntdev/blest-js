@@ -1,10 +1,11 @@
-import { v1 as uuid } from 'uuid';
-import EventEmitter from './events';
+import { EventEmitter } from './events';
+import { idGenerator } from './utilities';
 
 export interface ClientOptions {
     httpHeaders?: any
     maxBatchSize?: number
     bufferDelay?: number
+    idGenerator?: () => string
 }
 
 export class HttpClient {
@@ -16,6 +17,7 @@ export class HttpClient {
     private queue: any[] = [];
     private timeout: ReturnType<typeof setTimeout> | null = null;
     private emitter = new EventEmitter();
+    private idGenerator: () => string = idGenerator;
 
     constructor(url: string, options?: ClientOptions) {
         this.url = url;
@@ -23,6 +25,9 @@ export class HttpClient {
             const optionsError = validateClientOptions(options);
             if (optionsError) {
                 throw new Error(optionsError);
+            }
+            if (options.idGenerator) {
+                this.idGenerator = options.idGenerator
             }
         }
     }
@@ -63,7 +68,7 @@ export class HttpClient {
             } else if (headers && typeof headers !== 'object') {
                 return reject(new Error('Headers should be an object'));
             }
-            const id = uuid();
+            const id = this.idGenerator();
             this.emitter.once(id, (result: any, error: any) => {
                 if (error) {
                     reject(error);

@@ -20,9 +20,9 @@ router.route('hello', () => {
   }
 });
 
-const authMiddleware = (body, context) => {
+const authMiddleware = (body, context, next) => {
   if (context.headers?.auth === 'myToken') {
-    return;
+    return next();
   } else {
     throw new Error('Unauthorized');
   }
@@ -40,7 +40,7 @@ router.route('fail', () => {
 
 app.use('/', async (req, res) => {
   const [result, error] = await router.handle(req.body, {
-    headers: req.headers
+    httpHeaders: req.headers
   });
   if (error) {
     res.writeHead(500, { 'Content-Type': 'application/json' });

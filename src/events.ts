@@ -1,17 +1,12 @@
-const makeEventId = (length: number = 8): string => {
-    const max = Math.pow(16, length) - 1;
-    const randomNumber = Math.floor(Math.random() * (max + 1));
-    const id = randomNumber.toString(16).padStart(length, '0');
-    return id;
-}
+import { idGenerator } from "./utilities";
 
-class EventEmitter {
-    private runByEvent: any = {}
+export class EventEmitter {
+    runByEvent: any = {}
 
     add(event: string, cb: any, once: boolean = false) {
         if (!this.runByEvent[event]) this.runByEvent[event] = [];
         const node = {
-            id: makeEventId,
+            id: idGenerator(),
             event,
             cb,
             once
@@ -44,5 +39,3 @@ class EventEmitter {
         }
     }
 }
-
-export default EventEmitter;

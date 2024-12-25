@@ -6,7 +6,6 @@ export interface RouterOptions {
 export declare class Router {
     private introspection;
     private middleware;
-    private afterware;
     private timeout;
     routes: any;
     constructor(options?: RouterOptions);
