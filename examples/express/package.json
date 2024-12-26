@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "blest-js": "^1.0.0",
+    "blest-js": "^1.0.3",
     "cors": "^2.8.5",
     "express": "^4.18.2"
   }

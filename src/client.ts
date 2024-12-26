@@ -19,17 +19,47 @@ export class HttpClient {
     private emitter = new EventEmitter();
     private idGenerator: () => string = idGenerator;
 
+    public setOptions(options?: ClientOptions) {
+        if (!options) {
+          return false;
+        } else if (typeof options !== 'object') {
+          throw new Error('Options should be an object');
+        } else {
+          if (options.httpHeaders) {
+            if (typeof options.httpHeaders !== 'object' || Array.isArray(options.httpHeaders)) {
+              throw new Error('"httpHeaders" option should be an object');
+            }
+            this.httpHeaders = options.httpHeaders
+          }
+          if (options.maxBatchSize) {
+            if (typeof options.maxBatchSize !== 'number' || Math.round(options.maxBatchSize) !== options.maxBatchSize) {
+              throw new Error('"maxBatchSize" option should be an integer');
+            } else if (options.maxBatchSize < 1) {
+              throw new Error('"maxBatchSize" option should be greater than or equal to one');
+            }
+            this.maxBatchSize = options.maxBatchSize
+          }
+          if (options.bufferDelay) {
+            if (typeof options.bufferDelay !== 'number' || Math.round(options.bufferDelay) !== options.bufferDelay) {
+              throw new Error('"bufferDelay" option should be an integer');
+            } else if (options.bufferDelay < 0) {
+              throw new Error('"bufferDelay" option should be greater than or equal to zero');
+            }
+            this.bufferDelay = options.bufferDelay
+          }
+        }
+        return false;
+    }
+
+    public setUrl(url?:string) {
+      if (url && typeof url === 'string') {
+        this.url = url
+      }
+    }
+
     constructor(url: string, options?: ClientOptions) {
         this.url = url;
-        if (options) {
-            const optionsError = validateClientOptions(options);
-            if (optionsError) {
-                throw new Error(optionsError);
-            }
-            if (options.idGenerator) {
-                this.idGenerator = options.idGenerator
-            }
-        }
+        this.setOptions(options);
     }
 
     private process() {
@@ -57,6 +87,11 @@ export class HttpClient {
                 });
             });
         }
+    }
+
+    public set(option: string, value: any) {
+      if (typeof option !== 'string') throw new Error('Option name must be a string')
+      this.setOptions({ [option]: value })
     }
 
     public request(route: string, body: object | null, headers: object | null) {
@@ -103,33 +138,4 @@ const httpPostRequest = async (url: string, data: any, httpHeaders: any = {}): P
     if (!response.ok) throw new Error(`HTTP POST request failed with status code ${response.status}`);
     
     return await response.json();
-};
-
-const validateClientOptions = (options: ClientOptions) => {
-    if (!options) {
-        return false;
-    } else if (typeof options !== 'object') {
-        return 'Options should be an object';
-    } else {
-        if (options.httpHeaders) {
-            if (typeof options.httpHeaders !== 'object' || Array.isArray(options.httpHeaders)) {
-                return '"httpHeaders" option should be an object';
-            }
-        }
-        if (options.maxBatchSize) {
-            if (typeof options.maxBatchSize !== 'number' || Math.round(options.maxBatchSize) !== options.maxBatchSize) {
-                return '"maxBatchSize" option should be an integer';
-            } else if (options.maxBatchSize < 1) {
-                return '"maxBatchSize" option should be greater than or equal to one';
-            }
-        }
-        if (options.bufferDelay) {
-            if (typeof options.bufferDelay !== 'number' || Math.round(options.bufferDelay) !== options.bufferDelay) {
-                return '"bufferDelay" option should be an integer';
-            } else if (options.bufferDelay < 0) {
-                return '"bufferDelay" option should be greater than or equal to zero';
-            }
-        }
-    }
-    return false;
-};
+}

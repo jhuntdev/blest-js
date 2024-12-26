@@ -9,12 +9,14 @@ fastify.register(cors);
 const router = new Router();
 
 router.route('hello', () => {
-  return {
-    hello: 'world',
-    bonjour: 'le monde',
-    hola: 'mundo',
-    hallo: 'welt'
-  }
+  const languages = [
+    { hello: 'world' },
+    { bonjour: 'le monde' },
+    { hola: 'mundo' },
+    { hallo: 'welt' }
+  ];
+  const index = Math.floor(Math.random() * languages.length);
+  return languages[index];
 });
 
 const authMiddleware = (body, context) => {
