@@ -1,4 +1,4 @@
-import { idGenerator } from "./utilities";
+import { filterObject, idGenerator } from "./utilities";
 
 export interface RequestHandlerOptions {
   debug?: boolean
@@ -149,7 +149,9 @@ const routeReducer = async (
         console.error(`The route "${route}" did not return a result object`);
         return resolve([requestId, route, null, { message: 'Internal Server Error', status: 500 }]);
       }
-
+      if (safeContext.headers?._s && Array.isArray(safeContext.headers?._s)) {
+        result = filterObject(result, safeContext.headers._s);
+      }
       resolve([requestId, route, result, null]);
     } catch (error: any) {
       if (timer) {

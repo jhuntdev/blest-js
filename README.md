@@ -29,49 +29,6 @@ yarn add blest-js
 
 ## Usage
 
-<!-- The default export of this library has an interface similar to Express or Connect. It also provides a `Router` class with a `handle` method for use in an existing NodeJS application and an `HttpClient` class with a `request` method for making BLEST HTTP requests.
-
-```javascript
-const blest = require('blest-js');
-
-const app = blest({
-  timeout: 1000,
-  url: '/',
-  cors: 'http://localhost:3000'
-});
-const port = 8080;
-
-const authMiddleware = (params, context) => {
-  if (params?.name) {
-    context.user = {
-      name: params.name
-    };
-  } else {
-    throw new Error('Unauthorized');
-  }
-};
-
-const greetController = (params, context) => {
-  return {
-    greeting: `Hi, ${context.user?.name}!`
-  };
-};
-
-const errorHandler = (params, context, error) => {
-  console.log(error);
-};
-
-app.use(errorHandler);
-
-app.use(authMiddleware);
-
-app.route('greet', greetController);
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
-``` -->
-
 ### Router
 
 This example uses Express, but you can find examples with other frameworks [here](examples).
@@ -84,12 +41,11 @@ const app = express();
 const port = 8080;
 
 // Create some middleware (optional)
-const authMiddleware = (params, context) => {
-  if (context.headers?.auth === 'myToken') {
-    return;
-  } else {
-    throw new Error('Unauthorized');
-  }
+const loggingMiddleware = async (params, context, next) => {
+  const startTime = Date.now()
+  await next()
+  const endTime = Date.now()
+  console.log(context.route, endTime - startTime)
 };
 
 // Create a route controller
@@ -101,7 +57,7 @@ const greetController = (params, context) => {
 
 // Create a BLEST router
 const router = new Router({ timeout: 1000 });
-router.route('greet', authMiddleware, greetController);
+router.route('greet', loggingMiddleware, greetController);
 
 // Parse the JSON body
 app.use(express.json());
@@ -137,7 +93,7 @@ const client = new HttpClient('http://localhost:8080', {
 });
 
 // Send a request
-client.request('greet', { name: 'Steve' }, { "auth": "myToken" })
+client.request('greet', { name: 'Steve' })
 .then((result) => {
   // Do something with the result
 })

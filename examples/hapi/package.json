@@ -7,6 +7,6 @@
   },
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
-    "blest-js": "^1.0.3"
+    "blest-js": "^1.0.5"
   }
 }

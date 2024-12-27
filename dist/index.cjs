@@ -61,6 +61,43 @@ const validateRoute = (route, system = false) => {
     }
     return false;
 };
+const filterObject = (obj, arr) => {
+    if (Array.isArray(arr)) {
+        const filteredObj = {};
+        for (let i = 0; i < arr.length; i++) {
+            const key = arr[i];
+            if (typeof key === 'string') {
+                if (obj.hasOwnProperty(key)) {
+                    filteredObj[key] = obj[key];
+                }
+            }
+            else if (Array.isArray(key)) {
+                const nestedObj = obj[key[0]];
+                const nestedArr = key[1];
+                if (Array.isArray(nestedObj)) {
+                    const filteredArr = [];
+                    for (let j = 0; j < nestedObj.length; j++) {
+                        const filteredNestedObj = filterObject(nestedObj[j], nestedArr);
+                        if (Object.keys(filteredNestedObj).length > 0) {
+                            filteredArr.push(filteredNestedObj);
+                        }
+                    }
+                    if (filteredArr.length > 0) {
+                        filteredObj[key[0]] = filteredArr;
+                    }
+                }
+                else if (typeof nestedObj === 'object' && nestedObj !== null) {
+                    const filteredNestedObj = filterObject(nestedObj, nestedArr);
+                    if (Object.keys(filteredNestedObj).length > 0) {
+                        filteredObj[key[0]] = filteredNestedObj;
+                    }
+                }
+            }
+        }
+        return filteredObj;
+    }
+    return obj;
+};
 
 const handleRequest = async (routes, requests, context = {}, options = {}) => {
     if (!routes || typeof routes !== 'object' || Array.isArray(routes)) {
@@ -172,6 +209,9 @@ const routeReducer = async (handlers, context, timeout, debug) => {
             if (!!result && (typeof result !== 'object' || Array.isArray(result))) {
                 console.error(`The route "${route}" did not return a result object`);
                 return resolve([requestId, route, null, { message: 'Internal Server Error', status: 500 }]);
+            }
+            if (safeContext.headers?._s && Array.isArray(safeContext.headers?._s)) {
+                result = filterObject(result, safeContext.headers._s);
             }
             resolve([requestId, route, result, null]);
         }

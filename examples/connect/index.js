@@ -22,15 +22,7 @@ router.route('hello', () => {
   return languages[index];
 });
 
-const authMiddleware = (body, context, next) => {
-  if (context.headers?.auth === 'myToken') {
-    return next();
-  } else {
-    throw new Error('Unauthorized');
-  }
-};
-
-router.route('greet', authMiddleware, (body, context) => {
+router.route('greet', (body) => {
   return {
     greeting: `Hi, ${body.name}!`
   }

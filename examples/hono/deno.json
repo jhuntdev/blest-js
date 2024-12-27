@@ -1,6 +1,6 @@
 {
   "imports": {
-    "blest-js": "npm:blest-js@^1.0.3",
+    "blest-js": "npm:blest-js@^1.0.5",
     "hono": "jsr:@hono/hono@^4.6.11"
   },
   "tasks": {
