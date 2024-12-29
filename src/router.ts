@@ -10,7 +10,6 @@ export class Router {
 
   private introspection: boolean = false;
   private middleware: any[] = [];
-  // private afterware: any[] = [];
   private timeout: number = 0;
   public routes: any = {};
 
@@ -35,14 +34,7 @@ export class Router {
       if (typeof handlers[i] !== 'function') {
         throw new Error('All arguments should be functions');
       }
-      // const argCount = handlers[i].length;
-      // if (argCount <= 2) {
-        this.middleware.push(handlers[i]);
-      // } else if (argCount === 3) {
-        // this.afterware.push(handlers[i]);
-      // } else {
-        // throw new Error('Middleware should have at most three arguments');
-      // }
+      this.middleware.push(handlers[i]);
     }
 
   }
@@ -67,14 +59,11 @@ export class Router {
         if (typeof handlers[i] !== 'function') {
           throw new Error('Handlers must be functions: ' + i);
         }
-        // else if (handlers[i].length > 3) {
-        //   throw new Error('Handlers should have at most two arguments');
-        // }
       }
     }
 
     this.routes[route] = {
-      handler: [...this.middleware, ...handlers], // , ...this.afterware],
+      handler: [...this.middleware, ...handlers],
       description: null,
       schema: null,
       visible: this.introspection,
@@ -153,7 +142,7 @@ export class Router {
       } else {
         this.routes[route] = {
           ...router.routes[route],
-          handler: [...this.middleware, ...router.routes[route].handler], // ...this.afterware],
+          handler: [...this.middleware, ...router.routes[route].handler],
           timeout: router.routes[route].timeout || this.timeout
         };
       }
@@ -187,7 +176,7 @@ export class Router {
       } else {
         this.routes[nsRoute] = {
           ...router.routes[route],
-          handler: [...this.middleware, ...router.routes[route].handler], // ...this.afterware],
+          handler: [...this.middleware, ...router.routes[route].handler],
           timeout: router.routes[route].timeout || this.timeout
         };
       }
