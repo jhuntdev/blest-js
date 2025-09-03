@@ -90,7 +90,7 @@ const routeNotFound = (): never => {
 };
 
 interface RequestContext {
-  [key: string]: any;
+  [key: string]: any
 }
 
 const routeReducer = async (

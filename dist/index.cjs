@@ -131,10 +131,10 @@ const handleRequest = async (routes, requests, context = {}, options = {}) => {
         if (!route || typeof route !== 'string') {
             return handleError(400, 'Request item should have a route');
         }
-        if (typeof body !== 'object') {
+        if (body && typeof body !== 'object') {
             return handleError(400, 'Request item body should be a JSON object');
         }
-        if (typeof headers !== 'object') {
+        if (headers && typeof headers !== 'object') {
             return handleError(400, 'Request item headers should be a JSON object');
         }
         if (uniqueIds.indexOf(requestId) > -1)
