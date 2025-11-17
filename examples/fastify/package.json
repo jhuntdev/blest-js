@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^8.3.0",
-    "blest-js": "^1.0.5",
+    "blest-js": "^1.0.6",
     "fastify": "^4.17.0"
   }
 }
